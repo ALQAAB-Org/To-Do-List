@@ -15,7 +15,7 @@ Usage: Simply open To-Do.html in any modern browser.
 
 
 🚀 Quick Start
-Clone or download this repository<br>
+Clone or download this repo release v.2<br>
 Open either HTML file in your web browser<br>
 Start organizing your tasks immediately<br>
 All data is stored locally in your browser<br>
