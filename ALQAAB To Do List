@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALQAAB To Do List</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Service Worker Registration for Offline-First
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --light-text: #f8f9fa;
+            --dark-text: #212529;
+            --card-bg: #ffffff;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --border-color: #e0e0e0;
+            --completed-hover-bg: #e9ecef;
+        }
+
+        .dark-mode {
+            --light-bg: #121212;
+            --dark-bg: #f8f9fa;
+            --light-text: #212529;
+            --dark-text: #f8f9fa;
+            --card-bg: #1e1e1e;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            --border-color: #333333;
+            --completed-hover-bg: #2d2d2d;
+        }
+
+        /* Initial hidden state to prevent flash */
+        body:not(.loaded) {
+            opacity: 0;
+            transition: none !important;
+        }
+
+        body.loaded {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            transition: var(--transition);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Task Input Section */
+        .task-input-section {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .task-input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        /* Controls Section */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            align-items: center;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 5px;
+            background-color: var(--card-bg);
+            border-radius: 25px;
+            padding: 5px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-tab {
+            padding: 8px 15px;
+            border: none;
+            background: transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+
+        .filter-tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .sort-select {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Task List - Card Style */
+        .tasks-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .task-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+            overflow: hidden;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-card.completed {
+            opacity: 0.8;
+            border-left-color: var(--success-color);
+            background: linear-gradient(135deg, #dfeffd, #bde9fd);
+            border: 1px solid #b3e5fc;
+        }
+
+        .dark-mode .task-card.completed {
+            background: linear-gradient(135deg, #1a3c5a, #2a4d6e);
+            border: 1px solid #3a5d7e;
+            opacity: 0.9;
+        }
+
+        .task-card.completed:hover {
+            background-color: var(--completed-hover-bg);
+        }
+
+        .task-card.completed .task-title {
+            text-decoration: line-through;
+        }
+
+        .task-card.high {
+            border-left-color: var(--danger-color);
+        }
+
+        .task-card.medium {
+            border-left-color: var(--warning-color);
+        }
+
+        .task-card.low {
+            border-left-color: var(--success-color);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        /* Task title with line clamping - FIXED VERSION */
+        .task-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            word-break: break-word;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-clamp: 3;
+            display: box;
+            box-orient: vertical;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Link styles in task titles */
+        .task-title a {
+            color: var(--primary-color);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: var(--transition);
+            word-break: break-all;
+        }
+
+        .task-title a:hover {
+            border-bottom-color: var(--primary-color);
+        }
+
+        .dark-mode .task-title a {
+            color: var(--primary-light);
+        }
+
+        .task-priority {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-align: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .task-priority.high {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger-color);
+        }
+
+        .task-priority.medium {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning-color);
+        }
+
+        .task-priority.low {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+
+        .task-date {
+            font-size: 0.8rem;
+            color: var(--dark-text);
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+
+        .subtasks-section {
+            margin-top: 15px;
+        }
+
+        .subtasks-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .subtasks-list {
+            margin-bottom: 10px;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .subtask-item:last-child {
+            border-bottom: none;
+        }
+
+        .subtask-item.completed .subtask-title {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .subtask-checkbox {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Subtask title with line clamping - FIXED VERSION */
+        .subtask-title {
+            flex: 1;
+            font-size: 0.9rem;
+            word-break: break-word;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-clamp: 2;
+            display: box;
+            box-orient: vertical;
+            min-width: 0;
+        }
+
+        /* Link styles in subtask titles */
+        .subtask-title a {
+            color: var(--primary-color);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: var(--transition);
+            word-break: break-all;
+        }
+
+        .subtask-title a:hover {
+            border-bottom-color: var(--primary-color);
+        }
+
+        .dark-mode .subtask-title a {
+            color: var(--primary-light);
+        }
+
+        .delete-subtask {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .delete-subtask:hover {
+            background-color: rgba(247, 37, 133, 0.1);
+        }
+
+        .add-subtask-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .add-subtask-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            font-size: 0.9rem;
+        }
+
+        .add-subtask-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Deleted Subtasks Section */
+        .deleted-subtasks-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .deleted-subtasks-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--dark-text);
+            opacity: 0.7;
+        }
+
+        .deleted-subtasks-list {
+            margin-bottom: 10px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .deleted-subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0.7;
+        }
+
+        .deleted-subtask-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Deleted subtask title with line clamping - FIXED VERSION */
+        .deleted-subtask-title {
+            flex: 1;
+            font-size: 0.85rem;
+            word-break: break-word;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-clamp: 2;
+            display: box;
+            box-orient: vertical;
+            text-decoration: line-through;
+        }
+
+        .restore-subtask {
+            background: none;
+            border: none;
+            color: var(--success-color);
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .restore-subtask:hover {
+            background-color: rgba(76, 201, 240, 0.1);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .task-action {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .task-action.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .task-action.success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .task-action.danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .task-action.warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .task-action:hover {
+            opacity: 0.9;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--dark-text);
+            opacity: 0.7;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            padding: 20px 0;
+            margin-top: 40px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        .toast {
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: toastSlideIn 0.3s ease;
+            max-width: 300px;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        /* Settings Section */
+        .settings-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .settings-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .setting-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .setting-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .setting-description {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        /* Trash Section */
+        .trash-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .trash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .trash-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .trash-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .trash-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .trash-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 4px solid #6c757d;
+            opacity: 0.8;
+        }
+
+        .trash-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .trash-actions-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .trash-action {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .task-input-row {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .tasks-container {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-options {
+                grid-template-columns: 1fr;
+            }
+
+            .trash-container {
+                grid-template-columns: 1fr;
+            }
+
+            .trash-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .trash-actions {
+                width: 100%;
+            }
+
+            .task-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .task-priority {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1 class="app-title">ALQAAB To Do List</h1>
+                <button class="theme-toggle" id="themeToggle">
+                    <span>🌙</span> Dark Mode
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Task Input Section -->
+        <div class="task-input-section">
+            <div class="task-input-row">
+                <div class="form-group">
+                    <label class="form-label" for="taskTitle">Task Name *</label>
+                    <input type="text" class="form-control" id="taskTitle" placeholder="Enter task and press Enter" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="taskPriority">Priority</label>
+                    <select class="form-control" id="taskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary" id="addTaskBtn" style="width: 100%;">
+                        <span>+</span> Add Task
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All Tasks</button>
+                <button class="filter-tab" data-filter="pending">Pending</button>
+                <button class="filter-tab" data-filter="completed">Completed</button>
+            </div>
+            <select class="sort-select" id="sortSelect">
+                <option value="createdAt">Sort by Created Date</option>
+                <option value="priority">Sort by Priority</option>
+                <option value="title">Sort by Title</option>
+            </select>
+        </div>
+
+        <!-- Tasks Container -->
+        <div class="tasks-container" id="tasksList">
+            <!-- Tasks will be dynamically inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">
+                <span>📋</span>
+            </div>
+            <h3>No tasks found</h3>
+            <p>Get started by creating your first task!</p>
+        </div>
+
+        <!-- Trash Section -->
+        <div class="trash-section" id="trashSection" style="display: none;">
+            <div class="trash-header">
+                <h2 class="trash-title">🗑️ Trash</h2>
+                <div class="trash-actions">
+                    <button class="btn btn-warning" id="restoreAllBtn">
+                        <span>↶</span> Restore All
+                    </button>
+                    <button class="btn btn-danger" id="emptyTrashBtn">
+                        <span>🗑️</span> Empty Trash
+                    </button>
+                </div>
+            </div>
+            <div class="trash-container" id="trashList">
+                <!-- Deleted tasks will be dynamically inserted here -->
+            </div>
+            <div class="empty-state" id="emptyTrashState" style="display: none;">
+                <div class="empty-state-icon">
+                    <span>🗑️</span>
+                </div>
+                <h3>Trash is empty</h3>
+                <p>Deleted tasks will appear here</p>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="settings-section">
+            <h2 class="settings-title">Settings</h2>
+            <div class="settings-options">
+                <div class="setting-card">
+                    <h3 class="setting-title">Data Management</h3>
+                    <p class="setting-description">Export or import your task data as JSON files.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" id="exportSettingsBtn" style="flex: 1;">
+                            <span>📥</span> Export
+                        </button>
+                        <button class="btn btn-warning" id="importSettingsBtn" style="flex: 1;">
+                            <span>📤</span> Import
+                        </button>
+                    </div>
+                </div>
+                <div class="setting-card">
+                    <h3 class="setting-title">Text Report</h3>
+                    <p class="setting-description">Generate a TEXT report of your current tasks.</p>
+                    <button class="btn btn-primary" id="generateTextReportBtn" style="width: 100%;">
+                        <span>📄</span> Generate TEXT
+                    </button>
+                </div>
+                <div class="setting-card">
+                    <h3 class="setting-title">Appearance</h3>
+                    <p class="setting-description">Toggle between light and dark mode.</p>
+                    <button class="btn btn-primary" id="themeSettingsBtn" style="width: 100%;">
+                        <span>🌙</span> Toggle Theme
+                    </button>
+                </div>
+                <div class="setting-card">
+                    <h3 class="setting-title">Danger Zone</h3>
+                    <p class="setting-description">Permanently delete all data. This action cannot be undone.</p>
+                    <button class="btn btn-danger" id="clearSettingsBtn" style="width: 100%;">
+                        <span>🗑️</span> Clear All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>ALQAAB To Do List v.2 (Nov 27, 2025)</p>
+                <p>Works offline – Data saved in your browser</p>
+                <p>© 2025 ALQAAB Org. Developed by ALQAAB Web Studio | Shahbaz Ali.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Import File Input (Hidden) -->
+    <input type="file" id="importFileInput" style="display: none;" accept=".json">
+
+    <script>
+        // App State
+        let tasks = [];
+        let trash = [];
+        let currentFilter = 'all';
+        let currentSort = 'createdAt';
+
+        // IndexedDB setup for persistent storage - SINGLETON PATTERN
+        const DB_NAME = 'ALQAABTodoDB';
+        const DB_VERSION = 1;
+        const STORE_TASKS = 'tasks';
+        const STORE_TRASH = 'trash';
+        
+        let dbInstance = null;
+        let dbOpenRequest = null;
+
+        // DOM Elements
+        const tasksList = document.getElementById('tasksList');
+        const emptyState = document.getElementById('emptyState');
+        const trashSection = document.getElementById('trashSection');
+        const trashList = document.getElementById('trashList');
+        const emptyTrashState = document.getElementById('emptyTrashState');
+        const themeToggle = document.getElementById('themeToggle');
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const sortSelect = document.getElementById('sortSelect');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskTitleInput = document.getElementById('taskTitle');
+        const taskPrioritySelect = document.getElementById('taskPriority');
+        const generateTextReportBtn = document.getElementById('generateTextReportBtn');
+        const exportSettingsBtn = document.getElementById('exportSettingsBtn');
+        const importSettingsBtn = document.getElementById('importSettingsBtn');
+        const themeSettingsBtn = document.getElementById('themeSettingsBtn');
+        const clearSettingsBtn = document.getElementById('clearSettingsBtn');
+        const importFileInput = document.getElementById('importFileInput');
+        const restoreAllBtn = document.getElementById('restoreAllBtn');
+        const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+
+        // Initialize the app
+        async function init() {
+            // Apply theme immediately to prevent flash
+            applyInitialTheme();
+            
+            await loadData();
+            setupEventListeners();
+            renderTasks();
+            renderTrash();
+            
+            // Mark body as loaded to trigger fade-in
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 50);
+        }
+
+        // Apply theme immediately on page load - OPTIMIZED
+        function applyInitialTheme() {
+            const savedTheme = localStorage.getItem('alqaab-todo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                themeToggle.innerHTML = '<span>☀️</span> Light Mode';
+            }
+        }
+
+        // IndexedDB initialization - SINGLETON PATTERN
+        async function initDB() {
+            if (dbInstance) return dbInstance;
+            if (dbOpenRequest) return new Promise((resolve, reject) => {
+                dbOpenRequest.onsuccess = () => resolve(dbOpenRequest.result);
+                dbOpenRequest.onerror = () => reject(dbOpenRequest.error);
+            });
+
+            return new Promise((resolve, reject) => {
+                dbOpenRequest = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                dbOpenRequest.onerror = () => {
+                    console.error('IndexedDB error:', dbOpenRequest.error);
+                    reject(dbOpenRequest.error);
+                };
+                
+                dbOpenRequest.onsuccess = () => {
+                    dbInstance = dbOpenRequest.result;
+                    resolve(dbInstance);
+                };
+                
+                dbOpenRequest.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_TASKS)) {
+                        db.createObjectStore(STORE_TASKS, { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains(STORE_TRASH)) {
+                        db.createObjectStore(STORE_TRASH, { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+
+        // Save tasks to IndexedDB with proper transaction handling
+        async function saveTasks() {
+            try {
+                const db = await initDB();
+                
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_TASKS, STORE_TRASH], 'readwrite');
+                    
+                    transaction.oncomplete = () => {
+                        // Also save to localStorage as backup
+                        localStorage.setItem('alqaab-todo-tasks', JSON.stringify(tasks));
+                        localStorage.setItem('alqaab-todo-trash', JSON.stringify(trash));
+                        resolve();
+                    };
+                    
+                    transaction.onerror = () => {
+                        console.error('Transaction error:', transaction.error);
+                        reject(transaction.error);
+                    };
+                    
+                    const tasksStore = transaction.objectStore(STORE_TASKS);
+                    const trashStore = transaction.objectStore(STORE_TRASH);
+                    
+                    // Clear existing data and add new data in single transaction
+                    tasksStore.clear();
+                    trashStore.clear();
+                    
+                    // Bulk operations
+                    for (let i = 0; i < tasks.length; i++) {
+                        tasksStore.add(tasks[i]);
+                    }
+                    
+                    for (let i = 0; i < trash.length; i++) {
+                        trashStore.add(trash[i]);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error saving to IndexedDB:', error);
+                // Fallback to localStorage
+                localStorage.setItem('alqaab-todo-tasks', JSON.stringify(tasks));
+                localStorage.setItem('alqaab-todo-trash', JSON.stringify(trash));
+            }
+        }
+
+        // Load data from IndexedDB with localStorage fallback
+        async function loadData() {
+            try {
+                const db = await initDB();
+                
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_TASKS, STORE_TRASH], 'readonly');
+                    
+                    transaction.onerror = () => {
+                        console.error('Transaction error:', transaction.error);
+                        reject(transaction.error);
+                    };
+                    
+                    const tasksStore = transaction.objectStore(STORE_TASKS);
+                    const trashStore = transaction.objectStore(STORE_TRASH);
+                    
+                    const tasksRequest = tasksStore.getAll();
+                    const trashRequest = trashStore.getAll();
+                    
+                    let tasksLoaded = false;
+                    let trashLoaded = false;
+                    
+                    const checkComplete = () => {
+                        if (tasksLoaded && trashLoaded) {
+                            // Load theme
+                            const savedTheme = localStorage.getItem('alqaab-todo-theme');
+                            if (savedTheme === 'dark') {
+                                document.documentElement.classList.add('dark-mode');
+                                themeToggle.innerHTML = '<span>☀️</span> Light Mode';
+                            }
+                            resolve();
+                        }
+                    };
+                    
+                    tasksRequest.onsuccess = () => {
+                        if (tasksRequest.result.length > 0) {
+                            tasks = tasksRequest.result;
+                            // Ensure each task has deletedSubtasks array
+                            for (let i = 0; i < tasks.length; i++) {
+                                if (!tasks[i].deletedSubtasks) {
+                                    tasks[i].deletedSubtasks = [];
+                                }
+                            }
+                        } else {
+                            // Fallback to localStorage
+                            const savedTasks = localStorage.getItem('alqaab-todo-tasks');
+                            tasks = savedTasks ? JSON.parse(savedTasks) : getSampleTasks();
+                            // Ensure each task has deletedSubtasks array
+                            for (let i = 0; i < tasks.length; i++) {
+                                if (!tasks[i].deletedSubtasks) {
+                                    tasks[i].deletedSubtasks = [];
+                                }
+                            }
+                        }
+                        tasksLoaded = true;
+                        checkComplete();
+                    };
+                    
+                    trashRequest.onsuccess = () => {
+                        if (trashRequest.result.length > 0) {
+                            trash = trashRequest.result;
+                        } else {
+                            // Fallback to localStorage
+                            const savedTrash = localStorage.getItem('alqaab-todo-trash');
+                            trash = savedTrash ? JSON.parse(savedTrash) : [];
+                        }
+                        trashLoaded = true;
+                        checkComplete();
+                    };
+                });
+                
+            } catch (error) {
+                console.error('Error loading from IndexedDB:', error);
+                // Fallback to localStorage
+                const savedTasks = localStorage.getItem('alqaab-todo-tasks');
+                const savedTrash = localStorage.getItem('alqaab-todo-trash');
+                
+                tasks = savedTasks ? JSON.parse(savedTasks) : getSampleTasks();
+                trash = savedTrash ? JSON.parse(savedTrash) : [];
+                
+                // Ensure each task has deletedSubtasks array
+                for (let i = 0; i < tasks.length; i++) {
+                    if (!tasks[i].deletedSubtasks) {
+                        tasks[i].deletedSubtasks = [];
+                    }
+                }
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Theme toggle - OPTIMIZED
+            const toggleThemeHandler = () => {
+                const isDarkMode = document.documentElement.classList.toggle('dark-mode');
+                localStorage.setItem('alqaab-todo-theme', isDarkMode ? 'dark' : 'light');
+                themeToggle.innerHTML = isDarkMode ? '<span>☀️</span> Light Mode' : '<span>🌙</span> Dark Mode';
+            };
+            
+            themeToggle.addEventListener('click', toggleThemeHandler);
+            themeSettingsBtn.addEventListener('click', toggleThemeHandler);
+            
+            // Filter tabs
+            for (let i = 0; i < filterTabs.length; i++) {
+                filterTabs[i].addEventListener('click', function() {
+                    for (let j = 0; j < filterTabs.length; j++) {
+                        filterTabs[j].classList.remove('active');
+                    }
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderTasks();
+                });
+            }
+            
+            // Sort
+            sortSelect.addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                renderTasks();
+            });
+            
+            // Add task button
+            addTaskBtn.addEventListener('click', addTask);
+            
+            // Add task on Enter key
+            taskTitleInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+            
+            // Action buttons
+            generateTextReportBtn.addEventListener('click', generateTextReport);
+            exportSettingsBtn.addEventListener('click', exportData);
+            importSettingsBtn.addEventListener('click', () => importFileInput.click());
+            clearSettingsBtn.addEventListener('click', clearData);
+            
+            // Trash buttons
+            restoreAllBtn.addEventListener('click', restoreAllFromTrash);
+            emptyTrashBtn.addEventListener('click', emptyTrash);
+            
+            // File import
+            importFileInput.addEventListener('change', importData);
+        }
+
+        // Add a new task
+        async function addTask() {
+            const title = taskTitleInput.value.trim();
+            const priority = taskPrioritySelect.value;
+            
+            if (!title) {
+                showToast('Task title is required', 'error');
+                return;
+            }
+            
+            const now = new Date();
+            const newTask = {
+                id: generateId(),
+                title: title,
+                priority: priority,
+                status: 'pending',
+                createdAt: now.toISOString(),
+                subtasks: [],
+                deletedSubtasks: [] // Initialize deleted subtasks array
+            };
+            
+            tasks.push(newTask);
+            await saveTasks();
+            renderTasks();
+            
+            // Reset form
+            taskTitleInput.value = '';
+            taskTitleInput.focus();
+            
+            showToast('Task added successfully', 'success');
+        }
+
+        // Toggle task status (complete/incomplete)
+        async function toggleTaskStatus(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = task.status === 'completed' ? 'pending' : 'completed';
+                
+                // If marking task as completed, mark all subtasks as completed too
+                if (task.status === 'completed') {
+                    for (let i = 0; i < task.subtasks.length; i++) {
+                        task.subtasks[i].completed = true;
+                    }
+                }
+                
+                await saveTasks();
+                renderTasks();
+                showToast(`Task marked as ${task.status}`, 'success');
+            }
+        }
+
+        // Delete task (move to trash) - ATOMIC OPERATION
+        async function deleteTask(taskId) {
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                const [deletedTask] = tasks.splice(taskIndex, 1);
+                deletedTask.deletedAt = new Date().toISOString();
+                trash.push(deletedTask);
+                await saveTasks(); // Single transaction for both operations
+                renderTasks();
+                renderTrash();
+                showToast('Task moved to trash', 'success');
+            }
+        }
+
+        // Add a subtask
+        async function addSubtask(taskId, subtaskTitle) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && subtaskTitle.trim()) {
+                const newSubtask = {
+                    id: generateId(),
+                    title: subtaskTitle.trim(),
+                    completed: false
+                };
+                
+                task.subtasks.push(newSubtask);
+                await saveTasks();
+                renderTasks();
+                showToast('Subtask added', 'success');
+            }
+        }
+
+        // Toggle subtask status
+        async function toggleSubtaskStatus(taskId, subtaskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                const subtask = task.subtasks.find(s => s.id === subtaskId);
+                if (subtask) {
+                    subtask.completed = !subtask.completed;
+                    
+                    // If all subtasks are completed, mark main task as completed
+                    let allSubtasksCompleted = true;
+                    for (let i = 0; i < task.subtasks.length; i++) {
+                        if (!task.subtasks[i].completed) {
+                            allSubtasksCompleted = false;
+                            break;
+                        }
+                    }
+                    
+                    if (allSubtasksCompleted && task.subtasks.length > 0) {
+                        task.status = 'completed';
+                    } else if (task.status === 'completed') {
+                        task.status = 'pending';
+                    }
+                    
+                    await saveTasks();
+                    renderTasks();
+                }
+            }
+        }
+
+        // Delete a subtask (move to deletedSubtasks instead of permanent deletion)
+        async function deleteSubtask(taskId, subtaskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                const subtaskIndex = task.subtasks.findIndex(s => s.id === subtaskId);
+                if (subtaskIndex !== -1) {
+                    const [deletedSubtask] = task.subtasks.splice(subtaskIndex, 1);
+                    // Add to deleted subtasks array instead of permanent deletion
+                    task.deletedSubtasks.push(deletedSubtask);
+                    await saveTasks();
+                    renderTasks();
+                    showToast('Subtask moved to deleted items', 'success');
+                }
+            }
+        }
+
+        // Restore a deleted subtask
+        async function restoreSubtask(taskId, subtaskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                const subtaskIndex = task.deletedSubtasks.findIndex(s => s.id === subtaskId);
+                if (subtaskIndex !== -1) {
+                    const [restoredSubtask] = task.deletedSubtasks.splice(subtaskIndex, 1);
+                    task.subtasks.push(restoredSubtask);
+                    await saveTasks();
+                    renderTasks();
+                    showToast('Subtask restored', 'success');
+                }
+            }
+        }
+
+        // Function to convert URLs in text to clickable links
+        function makeLinksClickable(text) {
+            // Regular expression to match URLs
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            
+            // Split text into parts and convert URLs to links
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
+            });
+        }
+
+        // Render tasks based on current filter and sort - OPTIMIZED PERFORMANCE
+        function renderTasks() {
+            // Filter tasks
+            let filteredTasks = [];
+            const tasksLength = tasks.length;
+            
+            for (let i = 0; i < tasksLength; i++) {
+                const task = tasks[i];
+                if (currentFilter === 'all' || 
+                    (currentFilter === 'pending' && task.status === 'pending') ||
+                    (currentFilter === 'completed' && task.status === 'completed')) {
+                    filteredTasks.push(task);
+                }
+            }
+            
+            // Sort tasks - OPTIMIZED SORT
+            if (currentSort === 'createdAt') {
+                filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (currentSort === 'priority') {
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                filteredTasks.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+            } else if (currentSort === 'title') {
+                filteredTasks.sort((a, b) => a.title.localeCompare(b.title));
+            }
+            
+            // Render tasks - OPTIMIZED DOM MANIPULATION
+            const fragment = document.createDocumentFragment();
+            const filteredLength = filteredTasks.length;
+            
+            if (filteredLength === 0) {
+                emptyState.style.display = 'block';
+                tasksList.innerHTML = '';
+            } else {
+                emptyState.style.display = 'none';
+                
+                for (let i = 0; i < filteredLength; i++) {
+                    const taskElement = createTaskElement(filteredTasks[i]);
+                    fragment.appendChild(taskElement);
+                }
+                
+                tasksList.innerHTML = '';
+                tasksList.appendChild(fragment);
+            }
+        }
+
+        // Create task element with title attribute for truncated text
+        function createTaskElement(task) {
+            const taskCard = document.createElement('div');
+            taskCard.className = `task-card ${task.status === 'completed' ? 'completed' : ''} ${task.priority}`;
+            
+            // Task header with title and priority
+            const taskHeader = document.createElement('div');
+            taskHeader.className = 'task-header';
+            
+            const taskTitle = document.createElement('div');
+            taskTitle.className = 'task-title';
+            // Convert URLs in task title to clickable links
+            taskTitle.innerHTML = makeLinksClickable(task.title);
+            // Add title attribute for truncated text
+            taskTitle.title = task.title;
+            
+            const taskPriority = document.createElement('div');
+            taskPriority.className = `task-priority ${task.priority}`;
+            taskPriority.textContent = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
+            
+            taskHeader.appendChild(taskTitle);
+            taskHeader.appendChild(taskPriority);
+            
+            // Task date
+            const taskDate = document.createElement('div');
+            taskDate.className = 'task-date';
+            taskDate.textContent = formatDate(task.createdAt);
+            
+            // Subtasks section
+            const subtasksSection = document.createElement('div');
+            subtasksSection.className = 'subtasks-section';
+            
+            if (task.subtasks.length > 0) {
+                const subtasksTitle = document.createElement('div');
+                subtasksTitle.className = 'subtasks-title';
+                
+                let completedSubtasks = 0;
+                for (let i = 0; i < task.subtasks.length; i++) {
+                    if (task.subtasks[i].completed) completedSubtasks++;
+                }
+                
+                subtasksTitle.innerHTML = `
+                    <span>Subtasks (${completedSubtasks}/${task.subtasks.length})</span>
+                `;
+                
+                const subtasksList = document.createElement('div');
+                subtasksList.className = 'subtasks-list';
+                
+                for (let i = 0; i < task.subtasks.length; i++) {
+                    const subtask = task.subtasks[i];
+                    const subtaskItem = document.createElement('div');
+                    subtaskItem.className = `subtask-item ${subtask.completed ? 'completed' : ''}`;
+                    
+                    const subtaskCheckbox = document.createElement('input');
+                    subtaskCheckbox.type = 'checkbox';
+                    subtaskCheckbox.className = 'subtask-checkbox';
+                    subtaskCheckbox.checked = subtask.completed;
+                    subtaskCheckbox.addEventListener('change', () => toggleSubtaskStatus(task.id, subtask.id));
+                    
+                    const subtaskTitle = document.createElement('span');
+                    subtaskTitle.className = 'subtask-title';
+                    // Convert URLs in subtask title to clickable links
+                    subtaskTitle.innerHTML = makeLinksClickable(subtask.title);
+                    // Add title attribute for truncated text
+                    subtaskTitle.title = subtask.title;
+                    
+                    const deleteSubtaskBtn = document.createElement('button');
+                    deleteSubtaskBtn.className = 'delete-subtask';
+                    deleteSubtaskBtn.innerHTML = '✕';
+                    deleteSubtaskBtn.title = 'Delete subtask';
+                    deleteSubtaskBtn.addEventListener('click', () => deleteSubtask(task.id, subtask.id));
+                    
+                    subtaskItem.appendChild(subtaskCheckbox);
+                    subtaskItem.appendChild(subtaskTitle);
+                    subtaskItem.appendChild(deleteSubtaskBtn);
+                    subtasksList.appendChild(subtaskItem);
+                }
+                
+                subtasksSection.appendChild(subtasksTitle);
+                subtasksSection.appendChild(subtasksList);
+            }
+            
+            // Add subtask form
+            const addSubtaskForm = document.createElement('div');
+            addSubtaskForm.className = 'add-subtask-form';
+            
+            const addSubtaskInput = document.createElement('input');
+            addSubtaskInput.type = 'text';
+            addSubtaskInput.className = 'add-subtask-input';
+            addSubtaskInput.placeholder = 'Add a subtask...';
+            
+            const addSubtaskBtn = document.createElement('button');
+            addSubtaskBtn.className = 'add-subtask-btn';
+            addSubtaskBtn.textContent = 'Add';
+            addSubtaskBtn.addEventListener('click', () => {
+                addSubtask(task.id, addSubtaskInput.value);
+                addSubtaskInput.value = '';
+            });
+            
+            addSubtaskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addSubtask(task.id, addSubtaskInput.value);
+                    addSubtaskInput.value = '';
+                }
+            });
+            
+            addSubtaskForm.appendChild(addSubtaskInput);
+            addSubtaskForm.appendChild(addSubtaskBtn);
+            subtasksSection.appendChild(addSubtaskForm);
+
+            // Deleted subtasks section (if any)
+            if (task.deletedSubtasks && task.deletedSubtasks.length > 0) {
+                const deletedSubtasksSection = document.createElement('div');
+                deletedSubtasksSection.className = 'deleted-subtasks-section';
+                
+                const deletedSubtasksTitle = document.createElement('div');
+                deletedSubtasksTitle.className = 'deleted-subtasks-title';
+                deletedSubtasksTitle.innerHTML = `
+                    <span>Deleted Subtasks (${task.deletedSubtasks.length})</span>
+                `;
+                
+                const deletedSubtasksList = document.createElement('div');
+                deletedSubtasksList.className = 'deleted-subtasks-list';
+                
+                for (let i = 0; i < task.deletedSubtasks.length; i++) {
+                    const subtask = task.deletedSubtasks[i];
+                    const deletedSubtaskItem = document.createElement('div');
+                    deletedSubtaskItem.className = 'deleted-subtask-item';
+                    
+                    const deletedSubtaskTitle = document.createElement('span');
+                    deletedSubtaskTitle.className = 'deleted-subtask-title';
+                    deletedSubtaskTitle.innerHTML = makeLinksClickable(subtask.title);
+                    // Add title attribute for truncated text
+                    deletedSubtaskTitle.title = subtask.title;
+                    
+                    const restoreSubtaskBtn = document.createElement('button');
+                    restoreSubtaskBtn.className = 'restore-subtask';
+                    restoreSubtaskBtn.innerHTML = '↶';
+                    restoreSubtaskBtn.title = 'Restore subtask';
+                    restoreSubtaskBtn.addEventListener('click', () => restoreSubtask(task.id, subtask.id));
+                    
+                    deletedSubtaskItem.appendChild(deletedSubtaskTitle);
+                    deletedSubtaskItem.appendChild(restoreSubtaskBtn);
+                    deletedSubtasksList.appendChild(deletedSubtaskItem);
+                }
+                
+                deletedSubtasksSection.appendChild(deletedSubtasksTitle);
+                deletedSubtasksSection.appendChild(deletedSubtasksList);
+                subtasksSection.appendChild(deletedSubtasksSection);
+            }
+            
+            // Task actions
+            const taskActions = document.createElement('div');
+            taskActions.className = 'task-actions';
+            
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = `task-action ${task.status === 'completed' ? 'warning' : 'success'}`;
+            toggleBtn.innerHTML = task.status === 'completed' ? '↶ Mark Pending' : '✓ Mark Complete';
+            toggleBtn.addEventListener('click', () => toggleTaskStatus(task.id));
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'task-action danger';
+            deleteBtn.innerHTML = '🗑️ Delete';
+            deleteBtn.addEventListener('click', () => deleteTask(task.id));
+            
+            taskActions.appendChild(toggleBtn);
+            taskActions.appendChild(deleteBtn);
+            
+            // Append all elements to the card
+            taskCard.appendChild(taskHeader);
+            taskCard.appendChild(taskDate);
+            taskCard.appendChild(subtasksSection);
+            taskCard.appendChild(taskActions);
+            
+            return taskCard;
+        }
+
+        // Render trash with visibility control
+        function renderTrash() {
+            const fragment = document.createDocumentFragment();
+            
+            if (trash.length === 0) {
+                emptyTrashState.style.display = 'block';
+                trashSection.style.display = 'none';
+                trashList.innerHTML = '';
+            } else {
+                emptyTrashState.style.display = 'none';
+                trashSection.style.display = 'block';
+                
+                for (let i = 0; i < trash.length; i++) {
+                    const task = trash[i];
+                    const trashCard = document.createElement('div');
+                    trashCard.className = 'trash-card';
+                    
+                    // Task header with title and priority
+                    const taskHeader = document.createElement('div');
+                    taskHeader.className = 'task-header';
+                    
+                    const taskTitle = document.createElement('div');
+                    taskTitle.className = 'task-title';
+                    // Convert URLs in task title to clickable links (for trash items too)
+                    taskTitle.innerHTML = makeLinksClickable(task.title);
+                    // Add title attribute for truncated text
+                    taskTitle.title = task.title;
+                    
+                    const taskPriority = document.createElement('div');
+                    taskPriority.className = `task-priority ${task.priority}`;
+                    taskPriority.textContent = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
+                    
+                    taskHeader.appendChild(taskTitle);
+                    taskHeader.appendChild(taskPriority);
+                    
+                    // Task dates
+                    const taskDates = document.createElement('div');
+                    taskDates.className = 'task-date';
+                    taskDates.innerHTML = `
+                        <div>Created: ${formatDate(task.createdAt)}</div>
+                        <div>Deleted: ${formatDate(task.deletedAt)}</div>
+                    `;
+                    
+                    // Trash actions
+                    const trashActions = document.createElement('div');
+                    trashActions.className = 'trash-actions-buttons';
+                    
+                    const restoreBtn = document.createElement('button');
+                    restoreBtn.className = 'trash-action success';
+                    restoreBtn.innerHTML = '↶ Restore';
+                    restoreBtn.addEventListener('click', () => restoreFromTrash(task.id));
+                    
+                    const deletePermanentlyBtn = document.createElement('button');
+                    deletePermanentlyBtn.className = 'trash-action danger';
+                    deletePermanentlyBtn.innerHTML = '🗑️ Delete Permanently';
+                    deletePermanentlyBtn.addEventListener('click', () => deleteFromTrash(task.id));
+                    
+                    trashActions.appendChild(restoreBtn);
+                    trashActions.appendChild(deletePermanentlyBtn);
+                    
+                    // Append all elements to the card
+                    trashCard.appendChild(taskHeader);
+                    trashCard.appendChild(taskDates);
+                    trashCard.appendChild(trashActions);
+                    
+                    fragment.appendChild(trashCard);
+                }
+                
+                trashList.innerHTML = '';
+                trashList.appendChild(fragment);
+            }
+        }
+
+        // Restore task from trash
+        async function restoreFromTrash(taskId) {
+            const taskIndex = trash.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                const [restoredTask] = trash.splice(taskIndex, 1);
+                delete restoredTask.deletedAt;
+                tasks.push(restoredTask);
+                await saveTasks(); // Single transaction for both operations
+                renderTasks();
+                renderTrash();
+                showToast('Task restored from trash', 'success');
+            }
+        }
+
+        // Delete task permanently from trash
+        async function deleteFromTrash(taskId) {
+            const taskIndex = trash.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                trash.splice(taskIndex, 1);
+                await saveTasks();
+                renderTrash();
+                showToast('Task permanently deleted', 'success');
+            }
+        }
+
+        // Restore all tasks from trash - ATOMIC OPERATION
+        async function restoreAllFromTrash() {
+            const trashLength = trash.length;
+            if (trashLength === 0) {
+                showToast('Trash is already empty', 'info');
+                return;
+            }
+            
+            // Batch operation
+            for (let i = 0; i < trashLength; i++) {
+                delete trash[i].deletedAt;
+                tasks.push(trash[i]);
+            }
+            
+            trash.length = 0; // Clear array efficiently
+            await saveTasks(); // Single transaction
+            renderTasks();
+            renderTrash();
+            showToast('All tasks restored from trash', 'success');
+        }
+
+        // Empty trash - ATOMIC OPERATION
+        async function emptyTrash() {
+            const trashLength = trash.length;
+            if (trashLength === 0) {
+                showToast('Trash is already empty', 'info');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to permanently delete all tasks in trash? This action cannot be undone.')) {
+                trash.length = 0; // Clear array efficiently
+                await saveTasks();
+                renderTrash();
+                showToast('Trash emptied', 'success');
+            }
+        }
+
+        // Generate Text report
+        function generateTextReport() {
+            // Create a simple text-based report content
+            let reportContent = `ALQAAB To Do List Report\n`;
+            reportContent += `Generated on: ${new Date().toLocaleDateString()}\n\n`;
+            
+            // Calculate summary
+            const allTasks = tasks;
+            let completedTasks = 0;
+            let pendingTasks = 0;
+            
+            for (let i = 0; i < allTasks.length; i++) {
+                if (allTasks[i].status === 'completed') {
+                    completedTasks++;
+                } else {
+                    pendingTasks++;
+                }
+            }
+            
+            reportContent += `SUMMARY\n`;
+            reportContent += `Total Tasks: ${allTasks.length}\n`;
+            reportContent += `Completed: ${completedTasks}\n`;
+            reportContent += `Pending: ${pendingTasks}\n\n`;
+            
+            reportContent += `TASKS\n`;
+            reportContent += `====================\n\n`;
+            
+            for (let i = 0; i < allTasks.length; i++) {
+                const task = allTasks[i];
+                reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}]\n`;
+                reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
+                reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
+                
+                if (task.subtasks.length > 0) {
+                    reportContent += `   Subtasks:\n`;
+                    for (let j = 0; j < task.subtasks.length; j++) {
+                        const subtask = task.subtasks[j];
+                        reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
+                    }
+                }
+                
+                reportContent += `\n`;
+            }
+            
+            // Create and download the text file
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `alqaab-todo-report-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showToast('Text report downloaded successfully', 'success');
+        }
+
+        // Export data as JSON - ALWAYS LATEST STATE
+        function exportData() {
+            const data = {
+                tasks: tasks,
+                trash: trash,
+                exportDate: new Date().toISOString(),
+                version: 'ALQAAB To Do List v2'
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `alqaab-todo-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showToast('Data exported successfully', 'success');
+        }
+
+        // Import data from JSON file - NON-BLOCKING WITH BATCHING
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Use setTimeout to prevent UI freeze
+                setTimeout(async () => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        if (confirm('This will replace all current data. Are you sure?')) {
+                            // Batch the data assignment
+                            tasks = importedData.tasks || [];
+                            trash = importedData.trash || [];
+                            
+                            // Ensure each task has deletedSubtasks array
+                            for (let i = 0; i < tasks.length; i++) {
+                                if (!tasks[i].deletedSubtasks) {
+                                    tasks[i].deletedSubtasks = [];
+                                }
+                            }
+                            
+                            await saveTasks();
+                            renderTasks();
+                            renderTrash();
+                            showToast('Data imported successfully', 'success');
+                        }
+                    } catch (error) {
+                        showToast('Error importing data: Invalid file format', 'error');
+                    }
+                    
+                    // Reset file input
+                    event.target.value = '';
+                }, 0);
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Clear all data
+        async function clearData() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                tasks.length = 0;
+                trash.length = 0;
+                await saveTasks();
+                renderTasks();
+                renderTrash();
+                showToast('All data cleared', 'success');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            const toastContainer = document.getElementById('toastContainer');
+            toastContainer.appendChild(toast);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Utility functions
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Simple sample tasks for initial setup
+        function getSampleTasks() {
+            const now = new Date();
+            
+            return [
+                {
+                    id: generateId(),
+                    title: 'Welcome to ALQAAB To Do List',
+                    priority: 'medium',
+                    status: 'pending',
+                    createdAt: now.toISOString(),
+                    subtasks: [],
+                    deletedSubtasks: []
+                },
+                {
+                    id: generateId(),
+                    title: 'Add your first task above',
+                    priority: 'low',
+                    status: 'pending',
+                    createdAt: now.toISOString(),
+                    subtasks: [],
+                    deletedSubtasks: []
+                }
+            ];
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
