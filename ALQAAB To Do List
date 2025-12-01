@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,6 @@
     
     <!-- Service Worker Registration -->
     <script>
-        // Service Worker Registration for Offline-First
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('./sw.js')
@@ -23,6 +23,7 @@
     </script>
 
     <style>
+        /* All previous CSS styles remain exactly the same except calendar related styles removed */
         :root {
             --primary-color: #4361ee;
             --primary-light: #4895ef;
@@ -121,6 +122,46 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        /* Search Bar */
+        .search-section {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: var(--dark-text);
+            opacity: 0.7;
+        }
+
         /* Task Input Section */
         .task-input-section {
             background-color: var(--card-bg);
@@ -214,6 +255,68 @@
             border-color: var(--primary-color);
         }
 
+        /* Tags Filter */
+        .tags-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .tag-filter {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-filter.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tag-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* View Tabs - REMOVED */
+        /* .view-tabs {
+            display: flex;
+            gap: 5px;
+            background-color: var(--card-bg);
+            border-radius: 25px;
+            padding: 5px;
+            box-shadow: var(--shadow);
+            margin-left: auto;
+        }
+
+        .view-tab {
+            padding: 8px 15px;
+            border: none;
+            background: transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+
+        .view-tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        } */
+
         /* Task List - Card Style */
         .tasks-container {
             display: grid;
@@ -221,6 +324,14 @@
             gap: 20px;
             margin: 20px 0;
         }
+
+        /* Calendar View - REMOVED */
+        /* .calendar-view {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        } */
 
         .task-card {
             background-color: var(--card-bg);
@@ -230,6 +341,7 @@
             transition: var(--transition);
             border-left: 4px solid var(--primary-color);
             overflow: hidden;
+            position: relative;
         }
 
         .task-card:hover {
@@ -270,6 +382,36 @@
             border-left-color: var(--success-color);
         }
 
+        .task-card.pinned {
+            border: 2px solid var(--warning-color);
+            background: linear-gradient(135deg, #fff9e6, #fff3d1);
+        }
+
+        .dark-mode .task-card.pinned {
+            background: linear-gradient(135deg, #3a2e0a, #4a3e1a);
+            border: 2px solid var(--warning-color);
+        }
+
+        .task-card.overdue {
+            border: 2px solid var(--danger-color);
+            background: linear-gradient(135deg, #ffe6e6, #ffd1d1);
+        }
+
+        .dark-mode .task-card.overdue {
+            background: linear-gradient(135deg, #5a1a1a, #6e2a2a);
+            border: 2px solid var(--danger-color);
+        }
+
+        .task-card.due-soon {
+            border: 2px solid var(--warning-color);
+            background: linear-gradient(135deg, #fff3e6, #ffe8d1);
+        }
+
+        .dark-mode .task-card.due-soon {
+            background: linear-gradient(135deg, #5a3e1a, #6e4e2a);
+            border: 2px solid var(--warning-color);
+        }
+
         .task-header {
             display: flex;
             justify-content: space-between;
@@ -278,7 +420,7 @@
             gap: 10px;
         }
 
-        /* Task title with line clamping - FIXED VERSION */
+        /* Editable Task Title */
         .task-title {
             font-weight: 600;
             font-size: 1.1rem;
@@ -293,6 +435,30 @@
             box-orient: vertical;
             flex: 1;
             min-width: 0;
+            cursor: text;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .task-title:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-mode .task-title:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .task-title.editing {
+            background-color: var(--light-bg);
+            border: 1px solid var(--primary-color);
+            outline: none;
+            -webkit-line-clamp: unset;
+            line-clamp: unset;
+        }
+
+        .dark-mode .task-title.editing {
+            background-color: var(--dark-bg);
         }
 
         /* Link styles in task titles */
@@ -336,11 +502,109 @@
             color: var(--success-color);
         }
 
-        .task-date {
+        .task-meta {
             font-size: 0.8rem;
             color: var(--dark-text);
             opacity: 0.7;
             margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .task-date {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .task-due-date {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .task-due-date.overdue {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .task-due-date.due-soon {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .task-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .task-tag {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag-color-small {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Pin Button Styles */
+        .pin-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0.7;
+            z-index: 2;
+        }
+
+        .pin-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .pin-btn.pinned {
+            opacity: 1;
+            color: var(--warning-color);
+        }
+
+        /* Separator between pinned and unpinned tasks */
+        .pinned-separator {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .pinned-separator hr {
+            border: none;
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 10px 0;
+        }
+
+        .pinned-separator-text {
+            display: inline-block;
+            background-color: var(--card-bg);
+            padding: 0 15px;
+            color: var(--dark-text);
+            opacity: 0.7;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .subtasks-section {
@@ -383,7 +647,7 @@
             flex-shrink: 0;
         }
 
-        /* Subtask title with line clamping - FIXED VERSION */
+        /* Editable Subtask Title */
         .subtask-title {
             flex: 1;
             font-size: 0.9rem;
@@ -396,6 +660,30 @@
             display: box;
             box-orient: vertical;
             min-width: 0;
+            cursor: text;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .subtask-title:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-mode .subtask-title:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .subtask-title.editing {
+            background-color: var(--light-bg);
+            border: 1px solid var(--primary-color);
+            outline: none;
+            -webkit-line-clamp: unset;
+            line-clamp: unset;
+        }
+
+        .dark-mode .subtask-title.editing {
+            background-color: var(--dark-bg);
         }
 
         /* Link styles in subtask titles */
@@ -564,9 +852,129 @@
             color: white;
         }
 
-        .task-action:hover {
-            opacity: 0.9;
+        /* Calendar View Styles - REMOVED */
+        /* .calendar-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin: 20px 0;
         }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .calendar-nav-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .calendar-nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-month {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            font-size: 0.9rem;
+            color: var(--dark-text);
+            opacity: 0.7;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+            position: relative;
+            min-height: 80px;
+        }
+
+        .calendar-day:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.today {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: var(--primary-color);
+        }
+
+        .calendar-day.has-tasks::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .calendar-day-number {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .calendar-tasks {
+            margin-top: 3px;
+            max-height: 50px;
+            overflow-y: auto;
+        }
+
+        .calendar-task {
+            font-size: 0.7rem;
+            padding: 1px 3px;
+            margin-bottom: 1px;
+            border-radius: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .calendar-task.overdue {
+            background-color: rgba(247, 37, 133, 0.1);
+        }
+
+        .calendar-task.due-soon {
+            background-color: rgba(248, 150, 30, 0.1);
+        } */
 
         /* Empty State */
         .empty-state {
@@ -797,6 +1205,14 @@
                 grid-template-columns: 1fr;
             }
 
+            /* .calendar-view {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .calendar-day {
+                min-height: 60px;
+            } */
+
             .settings-options {
                 grid-template-columns: 1fr;
             }
@@ -824,6 +1240,16 @@
             .task-priority {
                 align-self: flex-start;
             }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            /* .view-tabs {
+                margin-left: 0;
+                justify-content: center;
+            } */
         }
     </style>
 </head>
@@ -842,6 +1268,14 @@
 
     <!-- Main Content -->
     <div class="container">
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search tasks and subtasks...">
+                <div class="search-icon">🔍</div>
+            </div>
+        </div>
+
         <!-- Task Input Section -->
         <div class="task-input-section">
             <div class="task-input-row">
@@ -857,6 +1291,17 @@
                         <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskDueDate">Due Date</label>
+                    <input type="date" class="form-control" id="taskDueDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskTags">Tags</label>
+                    <input type="text" class="form-control" id="taskTags" placeholder="work, personal, urgent">
+                    <small style="opacity: 0.7; font-size: 0.8rem;">Separate tags with commas</small>
                 </div>
                 
                 <div class="form-group">
@@ -874,18 +1319,37 @@
                 <button class="filter-tab active" data-filter="all">All Tasks</button>
                 <button class="filter-tab" data-filter="pending">Pending</button>
                 <button class="filter-tab" data-filter="completed">Completed</button>
+                <button class="filter-tab" data-filter="overdue">Overdue</button>
             </div>
+
             <select class="sort-select" id="sortSelect">
                 <option value="createdAt">Sort by Created Date</option>
+                <option value="dueDate">Sort by Due Date</option>
                 <option value="priority">Sort by Priority</option>
                 <option value="title">Sort by Title</option>
             </select>
+
+            <!-- View Tabs - REMOVED -->
+            <!-- <div class="view-tabs">
+                <button class="view-tab active" data-view="list">📋 List</button>
+                <button class="view-tab" data-view="calendar">📅 Calendar</button>
+            </div> -->
+        </div>
+
+        <!-- Tags Filter -->
+        <div class="tags-filter" id="tagsFilter">
+            <!-- Tags will be dynamically inserted here -->
         </div>
 
         <!-- Tasks Container -->
         <div class="tasks-container" id="tasksList">
             <!-- Tasks will be dynamically inserted here -->
         </div>
+
+        <!-- Calendar View - REMOVED -->
+        <!-- <div class="calendar-view" id="calendarView">
+            <!- Calendar will be dynamically inserted here ->
+        </div> -->
 
         <!-- Empty State -->
         <div class="empty-state" id="emptyState" style="display: none;">
@@ -984,9 +1448,20 @@
         let tasks = [];
         let trash = [];
         let currentFilter = 'all';
-        let currentSort = 'createdAt';
+        let currentSort = localStorage.getItem('alqaab-todo-sort') || 'createdAt';
+        let currentView = 'list';
+        let currentSearch = '';
+        let currentTagFilter = null;
+        let tags = JSON.parse(localStorage.getItem('alqaab-todo-tags')) || [
+            { name: 'work', color: '#4361ee' },
+            { name: 'personal', color: '#4cc9f0' },
+            { name: 'home', color: '#f8961e' },
+            { name: 'smit', color: '#f72585' },
+            { name: 'learning', color: '#3f37c9' },
+            { name: 'urgent', color: '#dc2626' }
+        ];
 
-        // IndexedDB setup for persistent storage - SINGLETON PATTERN
+        // IndexedDB setup for persistent storage
         const DB_NAME = 'ALQAABTodoDB';
         const DB_VERSION = 1;
         const STORE_TASKS = 'tasks';
@@ -997,16 +1472,22 @@
 
         // DOM Elements
         const tasksList = document.getElementById('tasksList');
+        // const calendarView = document.getElementById('calendarView'); // REMOVED
         const emptyState = document.getElementById('emptyState');
         const trashSection = document.getElementById('trashSection');
         const trashList = document.getElementById('trashList');
         const emptyTrashState = document.getElementById('emptyTrashState');
         const themeToggle = document.getElementById('themeToggle');
         const filterTabs = document.querySelectorAll('.filter-tab');
+        // const viewTabs = document.querySelectorAll('.view-tab'); // REMOVED
         const sortSelect = document.getElementById('sortSelect');
+        const searchInput = document.getElementById('searchInput');
+        const tagsFilter = document.getElementById('tagsFilter');
         const addTaskBtn = document.getElementById('addTaskBtn');
         const taskTitleInput = document.getElementById('taskTitle');
         const taskPrioritySelect = document.getElementById('taskPriority');
+        const taskDueDateInput = document.getElementById('taskDueDate');
+        const taskTagsInput = document.getElementById('taskTags');
         const generateTextReportBtn = document.getElementById('generateTextReportBtn');
         const exportSettingsBtn = document.getElementById('exportSettingsBtn');
         const importSettingsBtn = document.getElementById('importSettingsBtn');
@@ -1023,7 +1504,9 @@
             
             await loadData();
             setupEventListeners();
+            renderTagsFilter();
             renderTasks();
+            // renderCalendar(); // REMOVED
             renderTrash();
             
             // Mark body as loaded to trigger fade-in
@@ -1032,7 +1515,7 @@
             }, 50);
         }
 
-        // Apply theme immediately on page load - OPTIMIZED
+        // Apply theme immediately on page load
         function applyInitialTheme() {
             const savedTheme = localStorage.getItem('alqaab-todo-theme');
             if (savedTheme === 'dark') {
@@ -1041,7 +1524,7 @@
             }
         }
 
-        // IndexedDB initialization - SINGLETON PATTERN
+        // IndexedDB initialization
         async function initDB() {
             if (dbInstance) return dbInstance;
             if (dbOpenRequest) return new Promise((resolve, reject) => {
@@ -1074,7 +1557,7 @@
             });
         }
 
-        // Save tasks to IndexedDB with proper transaction handling
+        // Save tasks to IndexedDB
         async function saveTasks() {
             try {
                 const db = await initDB();
@@ -1083,9 +1566,9 @@
                     const transaction = db.transaction([STORE_TASKS, STORE_TRASH], 'readwrite');
                     
                     transaction.oncomplete = () => {
-                        // Also save to localStorage as backup
                         localStorage.setItem('alqaab-todo-tasks', JSON.stringify(tasks));
                         localStorage.setItem('alqaab-todo-trash', JSON.stringify(trash));
+                        localStorage.setItem('alqaab-todo-tags', JSON.stringify(tags));
                         resolve();
                     };
                     
@@ -1097,11 +1580,9 @@
                     const tasksStore = transaction.objectStore(STORE_TASKS);
                     const trashStore = transaction.objectStore(STORE_TRASH);
                     
-                    // Clear existing data and add new data in single transaction
                     tasksStore.clear();
                     trashStore.clear();
                     
-                    // Bulk operations
                     for (let i = 0; i < tasks.length; i++) {
                         tasksStore.add(tasks[i]);
                     }
@@ -1113,9 +1594,9 @@
                 
             } catch (error) {
                 console.error('Error saving to IndexedDB:', error);
-                // Fallback to localStorage
                 localStorage.setItem('alqaab-todo-tasks', JSON.stringify(tasks));
                 localStorage.setItem('alqaab-todo-trash', JSON.stringify(trash));
+                localStorage.setItem('alqaab-todo-tags', JSON.stringify(tags));
             }
         }
 
@@ -1143,7 +1624,6 @@
                     
                     const checkComplete = () => {
                         if (tasksLoaded && trashLoaded) {
-                            // Load theme
                             const savedTheme = localStorage.getItem('alqaab-todo-theme');
                             if (savedTheme === 'dark') {
                                 document.documentElement.classList.add('dark-mode');
@@ -1156,20 +1636,23 @@
                     tasksRequest.onsuccess = () => {
                         if (tasksRequest.result.length > 0) {
                             tasks = tasksRequest.result;
-                            // Ensure each task has deletedSubtasks array
                             for (let i = 0; i < tasks.length; i++) {
                                 if (!tasks[i].deletedSubtasks) {
                                     tasks[i].deletedSubtasks = [];
                                 }
+                                if (!tasks[i].tags) {
+                                    tasks[i].tags = [];
+                                }
                             }
                         } else {
-                            // Fallback to localStorage
                             const savedTasks = localStorage.getItem('alqaab-todo-tasks');
                             tasks = savedTasks ? JSON.parse(savedTasks) : getSampleTasks();
-                            // Ensure each task has deletedSubtasks array
                             for (let i = 0; i < tasks.length; i++) {
                                 if (!tasks[i].deletedSubtasks) {
                                     tasks[i].deletedSubtasks = [];
+                                }
+                                if (!tasks[i].tags) {
+                                    tasks[i].tags = [];
                                 }
                             }
                         }
@@ -1181,7 +1664,6 @@
                         if (trashRequest.result.length > 0) {
                             trash = trashRequest.result;
                         } else {
-                            // Fallback to localStorage
                             const savedTrash = localStorage.getItem('alqaab-todo-trash');
                             trash = savedTrash ? JSON.parse(savedTrash) : [];
                         }
@@ -1192,17 +1674,20 @@
                 
             } catch (error) {
                 console.error('Error loading from IndexedDB:', error);
-                // Fallback to localStorage
                 const savedTasks = localStorage.getItem('alqaab-todo-tasks');
                 const savedTrash = localStorage.getItem('alqaab-todo-trash');
+                const savedTags = localStorage.getItem('alqaab-todo-tags');
                 
                 tasks = savedTasks ? JSON.parse(savedTasks) : getSampleTasks();
                 trash = savedTrash ? JSON.parse(savedTrash) : [];
+                tags = savedTags ? JSON.parse(savedTags) : tags;
                 
-                // Ensure each task has deletedSubtasks array
                 for (let i = 0; i < tasks.length; i++) {
                     if (!tasks[i].deletedSubtasks) {
                         tasks[i].deletedSubtasks = [];
+                    }
+                    if (!tasks[i].tags) {
+                        tasks[i].tags = [];
                     }
                 }
             }
@@ -1210,7 +1695,7 @@
 
         // Setup event listeners
         function setupEventListeners() {
-            // Theme toggle - OPTIMIZED
+            // Theme toggle
             const toggleThemeHandler = () => {
                 const isDarkMode = document.documentElement.classList.toggle('dark-mode');
                 localStorage.setItem('alqaab-todo-theme', isDarkMode ? 'dark' : 'light');
@@ -1229,13 +1714,36 @@
                     this.classList.add('active');
                     currentFilter = this.dataset.filter;
                     renderTasks();
+                    // renderCalendar(); // REMOVED
                 });
             }
             
+            // View tabs - REMOVED
+            // for (let i = 0; i < viewTabs.length; i++) {
+            //     viewTabs[i].addEventListener('click', function() {
+            //         for (let j = 0; j < viewTabs.length; j++) {
+            //             viewTabs[j].classList.remove('active');
+            //         }
+            //         this.classList.add('active');
+            //         currentView = this.dataset.view;
+            //         updateView();
+            //     });
+            // }
+            
             // Sort
+            sortSelect.value = currentSort;
             sortSelect.addEventListener('change', (e) => {
                 currentSort = e.target.value;
+                localStorage.setItem('alqaab-todo-sort', currentSort);
                 renderTasks();
+                // renderCalendar(); // REMOVED
+            });
+            
+            // Search - FIXED: Now searches in both task titles and subtask titles
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.toLowerCase();
+                renderTasks();
+                // renderCalendar(); // REMOVED
             });
             
             // Add task button
@@ -1260,16 +1768,93 @@
             
             // File import
             importFileInput.addEventListener('change', importData);
+
+            // Set current date as default for due date
+            const today = new Date().toISOString().split('T')[0];
+            taskDueDateInput.value = today;
+        }
+
+        // Update view based on current view - REMOVED
+        // function updateView() {
+        //     if (currentView === 'list') {
+        //         tasksList.style.display = 'grid';
+        //         calendarView.style.display = 'none';
+        //         renderTasks();
+        //     } else {
+        //         tasksList.style.display = 'none';
+        //         calendarView.style.display = 'grid';
+        //         renderCalendar();
+        //     }
+        // }
+
+        // Render tags filter
+        function renderTagsFilter() {
+            const fragment = document.createDocumentFragment();
+            
+            // Clear all tag
+            const clearTag = document.createElement('button');
+            clearTag.className = `tag-filter ${!currentTagFilter ? 'active' : ''}`;
+            clearTag.innerHTML = 'All Tags';
+            clearTag.addEventListener('click', () => {
+                currentTagFilter = null;
+                renderTagsFilter();
+                renderTasks();
+                // renderCalendar(); // REMOVED
+            });
+            fragment.appendChild(clearTag);
+            
+            // Tag filters
+            for (let i = 0; i < tags.length; i++) {
+                const tag = tags[i];
+                const tagFilter = document.createElement('button');
+                tagFilter.className = `tag-filter ${currentTagFilter === tag.name ? 'active' : ''}`;
+                tagFilter.innerHTML = `
+                    <span class="tag-color" style="background-color: ${tag.color}"></span>
+                    ${tag.name}
+                `;
+                tagFilter.addEventListener('click', () => {
+                    currentTagFilter = currentTagFilter === tag.name ? null : tag.name;
+                    renderTagsFilter();
+                    renderTasks();
+                    // renderCalendar(); // REMOVED
+                });
+                fragment.appendChild(tagFilter);
+            }
+            
+            tagsFilter.innerHTML = '';
+            tagsFilter.appendChild(fragment);
         }
 
         // Add a new task
         async function addTask() {
             const title = taskTitleInput.value.trim();
             const priority = taskPrioritySelect.value;
+            const dueDate = taskDueDateInput.value;
+            const tagsInput = taskTagsInput.value.trim();
             
             if (!title) {
                 showToast('Task title is required', 'error');
                 return;
+            }
+            
+            // Process tags
+            const taskTags = [];
+            if (tagsInput) {
+                const tagNames = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+                for (let i = 0; i < tagNames.length; i++) {
+                    const tagName = tagNames[i].toLowerCase();
+                    let tag = tags.find(t => t.name === tagName);
+                    if (!tag) {
+                        // Create new tag with random color
+                        const colors = ['#4361ee', '#4cc9f0', '#f8961e', '#f72585', '#3f37c9', '#dc2626', '#10b981', '#8b5cf6'];
+                        tag = {
+                            name: tagName,
+                            color: colors[Math.floor(Math.random() * colors.length)]
+                        };
+                        tags.push(tag);
+                    }
+                    taskTags.push(tag.name);
+                }
             }
             
             const now = new Date();
@@ -1279,16 +1864,22 @@
                 priority: priority,
                 status: 'pending',
                 createdAt: now.toISOString(),
+                dueDate: dueDate || null,
+                tags: taskTags,
                 subtasks: [],
-                deletedSubtasks: [] // Initialize deleted subtasks array
+                deletedSubtasks: [],
+                pinned: false
             };
             
             tasks.push(newTask);
             await saveTasks();
+            renderTagsFilter();
             renderTasks();
+            // renderCalendar(); // REMOVED
             
             // Reset form
             taskTitleInput.value = '';
+            taskTagsInput.value = '';
             taskTitleInput.focus();
             
             showToast('Task added successfully', 'success');
@@ -1300,7 +1891,6 @@
             if (task) {
                 task.status = task.status === 'completed' ? 'pending' : 'completed';
                 
-                // If marking task as completed, mark all subtasks as completed too
                 if (task.status === 'completed') {
                     for (let i = 0; i < task.subtasks.length; i++) {
                         task.subtasks[i].completed = true;
@@ -1309,19 +1899,33 @@
                 
                 await saveTasks();
                 renderTasks();
+                // renderCalendar(); // REMOVED
                 showToast(`Task marked as ${task.status}`, 'success');
             }
         }
 
-        // Delete task (move to trash) - ATOMIC OPERATION
+        // Toggle task pinned status
+        async function togglePinTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.pinned = !task.pinned;
+                await saveTasks();
+                renderTasks();
+                // renderCalendar(); // REMOVED
+                showToast(`Task ${task.pinned ? 'pinned' : 'unpinned'}`, 'success');
+            }
+        }
+
+        // Delete task (move to trash)
         async function deleteTask(taskId) {
             const taskIndex = tasks.findIndex(t => t.id === taskId);
             if (taskIndex !== -1) {
                 const [deletedTask] = tasks.splice(taskIndex, 1);
                 deletedTask.deletedAt = new Date().toISOString();
                 trash.push(deletedTask);
-                await saveTasks(); // Single transaction for both operations
+                await saveTasks();
                 renderTasks();
+                // renderCalendar(); // REMOVED
                 renderTrash();
                 showToast('Task moved to trash', 'success');
             }
@@ -1340,6 +1944,7 @@
                 task.subtasks.push(newSubtask);
                 await saveTasks();
                 renderTasks();
+                // renderCalendar(); // REMOVED
                 showToast('Subtask added', 'success');
             }
         }
@@ -1352,7 +1957,6 @@
                 if (subtask) {
                     subtask.completed = !subtask.completed;
                     
-                    // If all subtasks are completed, mark main task as completed
                     let allSubtasksCompleted = true;
                     for (let i = 0; i < task.subtasks.length; i++) {
                         if (!task.subtasks[i].completed) {
@@ -1369,21 +1973,22 @@
                     
                     await saveTasks();
                     renderTasks();
+                    // renderCalendar(); // REMOVED
                 }
             }
         }
 
-        // Delete a subtask (move to deletedSubtasks instead of permanent deletion)
+        // Delete a subtask
         async function deleteSubtask(taskId, subtaskId) {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 const subtaskIndex = task.subtasks.findIndex(s => s.id === subtaskId);
                 if (subtaskIndex !== -1) {
                     const [deletedSubtask] = task.subtasks.splice(subtaskIndex, 1);
-                    // Add to deleted subtasks array instead of permanent deletion
                     task.deletedSubtasks.push(deletedSubtask);
                     await saveTasks();
                     renderTasks();
+                    // renderCalendar(); // REMOVED
                     showToast('Subtask moved to deleted items', 'success');
                 }
             }
@@ -1399,59 +2004,216 @@
                     task.subtasks.push(restoredSubtask);
                     await saveTasks();
                     renderTasks();
+                    // renderCalendar(); // REMOVED
                     showToast('Subtask restored', 'success');
                 }
             }
         }
 
+        // Update task title
+        async function updateTaskTitle(taskId, newTitle) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && newTitle.trim()) {
+                task.title = newTitle.trim();
+                await saveTasks();
+                renderTasks();
+                // renderCalendar(); // REMOVED
+                showToast('Task title updated', 'success');
+            }
+        }
+
+        // Update subtask title
+        async function updateSubtaskTitle(taskId, subtaskId, newTitle) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                const subtask = task.subtasks.find(s => s.id === subtaskId);
+                if (subtask && newTitle.trim()) {
+                    subtask.title = newTitle.trim();
+                    await saveTasks();
+                    renderTasks();
+                    // renderCalendar(); // REMOVED
+                    showToast('Subtask title updated', 'success');
+                }
+            }
+        }
+
+        // Update task due date
+        async function updateTaskDueDate(taskId, newDueDate) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.dueDate = newDueDate;
+                await saveTasks();
+                renderTasks();
+                // renderCalendar(); // REMOVED
+                showToast('Due date updated', 'success');
+            }
+        }
+
         // Function to convert URLs in text to clickable links
         function makeLinksClickable(text) {
-            // Regular expression to match URLs
             const urlRegex = /(https?:\/\/[^\s]+)/g;
-            
-            // Split text into parts and convert URLs to links
             return text.replace(urlRegex, function(url) {
                 return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
             });
         }
 
-        // Render tasks based on current filter and sort - OPTIMIZED PERFORMANCE
-        function renderTasks() {
-            // Filter tasks
-            let filteredTasks = [];
-            const tasksLength = tasks.length;
+        // Make element editable
+        function makeEditable(element, saveCallback) {
+            const originalContent = element.innerHTML;
             
-            for (let i = 0; i < tasksLength; i++) {
+            element.contentEditable = true;
+            element.classList.add('editing');
+            element.focus();
+            
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            const saveEdit = () => {
+                element.contentEditable = false;
+                element.classList.remove('editing');
+                saveCallback(element.innerHTML);
+            };
+            
+            const handleKeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    element.innerHTML = originalContent;
+                    element.contentEditable = false;
+                    element.classList.remove('editing');
+                    element.removeEventListener('keydown', handleKeydown);
+                    element.removeEventListener('blur', handleBlur);
+                }
+            };
+            
+            const handleBlur = () => {
+                saveEdit();
+            };
+            
+            element.addEventListener('keydown', handleKeydown);
+            element.addEventListener('blur', handleBlur);
+        }
+
+        // Get tasks based on current filters and search - FIXED: Now searches in subtasks too
+        function getFilteredTasks() {
+            let filteredTasks = [];
+            
+            for (let i = 0; i < tasks.length; i++) {
                 const task = tasks[i];
-                if (currentFilter === 'all' || 
-                    (currentFilter === 'pending' && task.status === 'pending') ||
-                    (currentFilter === 'completed' && task.status === 'completed')) {
+                
+                // Filter by status
+                let statusMatch = true;
+                if (currentFilter === 'pending' && task.status !== 'pending') {
+                    statusMatch = false;
+                } else if (currentFilter === 'completed' && task.status !== 'completed') {
+                    statusMatch = false;
+                } else if (currentFilter === 'overdue') {
+                    if (task.status === 'completed' || !task.dueDate) {
+                        statusMatch = false;
+                    } else {
+                        const dueDate = new Date(task.dueDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        statusMatch = dueDate < today;
+                    }
+                }
+                
+                // Filter by search - FIXED: Now searches in both task title and subtask titles
+                let searchMatch = true;
+                if (currentSearch) {
+                    const taskTitleMatch = task.title.toLowerCase().includes(currentSearch);
+                    const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(currentSearch));
+                    
+                    // Check subtasks for search match
+                    let subtaskMatch = false;
+                    for (let j = 0; j < task.subtasks.length; j++) {
+                        if (task.subtasks[j].title.toLowerCase().includes(currentSearch)) {
+                            subtaskMatch = true;
+                            break;
+                        }
+                    }
+                    
+                    searchMatch = taskTitleMatch || tagsMatch || subtaskMatch;
+                }
+                
+                // Filter by tag
+                let tagMatch = true;
+                if (currentTagFilter) {
+                    tagMatch = task.tags.includes(currentTagFilter);
+                }
+                
+                if (statusMatch && searchMatch && tagMatch) {
                     filteredTasks.push(task);
                 }
             }
             
-            // Sort tasks - OPTIMIZED SORT
-            if (currentSort === 'createdAt') {
-                filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            } else if (currentSort === 'priority') {
-                const priorityOrder = { high: 3, medium: 2, low: 1 };
-                filteredTasks.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
-            } else if (currentSort === 'title') {
-                filteredTasks.sort((a, b) => a.title.localeCompare(b.title));
-            }
+            return filteredTasks;
+        }
+
+        // Render tasks based on current filter and sort
+        function renderTasks() {
+            let filteredTasks = getFilteredTasks();
             
-            // Render tasks - OPTIMIZED DOM MANIPULATION
+            // Separate pinned and unpinned tasks
+            const pinnedTasks = filteredTasks.filter(task => task.pinned);
+            const unpinnedTasks = filteredTasks.filter(task => !task.pinned);
+            
+            // Sort tasks
+            const sortTasks = (taskArray) => {
+                if (currentSort === 'createdAt') {
+                    taskArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else if (currentSort === 'dueDate') {
+                    taskArray.sort((a, b) => {
+                        if (!a.dueDate && !b.dueDate) return 0;
+                        if (!a.dueDate) return 1;
+                        if (!b.dueDate) return -1;
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    });
+                } else if (currentSort === 'priority') {
+                    const priorityOrder = { high: 3, medium: 2, low: 1 };
+                    taskArray.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+                } else if (currentSort === 'title') {
+                    taskArray.sort((a, b) => a.title.localeCompare(b.title));
+                }
+            };
+            
+            sortTasks(pinnedTasks);
+            sortTasks(unpinnedTasks);
+            
             const fragment = document.createDocumentFragment();
-            const filteredLength = filteredTasks.length;
+            const totalTasks = pinnedTasks.length + unpinnedTasks.length;
             
-            if (filteredLength === 0) {
+            if (totalTasks === 0) {
                 emptyState.style.display = 'block';
                 tasksList.innerHTML = '';
             } else {
                 emptyState.style.display = 'none';
                 
-                for (let i = 0; i < filteredLength; i++) {
-                    const taskElement = createTaskElement(filteredTasks[i]);
+                // Render pinned tasks
+                for (let i = 0; i < pinnedTasks.length; i++) {
+                    const taskElement = createTaskElement(pinnedTasks[i]);
+                    fragment.appendChild(taskElement);
+                }
+                
+                // Add separator if there are both pinned and unpinned tasks
+                if (pinnedTasks.length > 0 && unpinnedTasks.length > 0) {
+                    const separator = document.createElement('div');
+                    separator.className = 'pinned-separator';
+                    separator.innerHTML = `
+                        <hr>
+                        <div class="pinned-separator-text">Other Tasks</div>
+                        <hr>
+                    `;
+                    fragment.appendChild(separator);
+                }
+                
+                // Render unpinned tasks
+                for (let i = 0; i < unpinnedTasks.length; i++) {
+                    const taskElement = createTaskElement(unpinnedTasks[i]);
                     fragment.appendChild(taskElement);
                 }
                 
@@ -1460,10 +2222,34 @@
             }
         }
 
-        // Create task element with title attribute for truncated text
+        // Create task element
         function createTaskElement(task) {
             const taskCard = document.createElement('div');
-            taskCard.className = `task-card ${task.status === 'completed' ? 'completed' : ''} ${task.priority}`;
+            
+            // Determine task status class
+            let statusClass = '';
+            if (task.dueDate) {
+                const dueDate = new Date(task.dueDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                if (dueDate < today) {
+                    statusClass = 'overdue';
+                } else if (dueDate.getTime() === today.getTime() || dueDate.getTime() === tomorrow.getTime()) {
+                    statusClass = 'due-soon';
+                }
+            }
+            
+            taskCard.className = `task-card ${task.status === 'completed' ? 'completed' : ''} ${task.priority} ${task.pinned ? 'pinned' : ''} ${statusClass}`;
+            
+            // Pin button
+            const pinBtn = document.createElement('button');
+            pinBtn.className = `pin-btn ${task.pinned ? 'pinned' : ''}`;
+            pinBtn.innerHTML = task.pinned ? '📌' : '📍';
+            pinBtn.title = task.pinned ? 'Unpin task' : 'Pin task';
+            pinBtn.addEventListener('click', () => togglePinTask(task.id));
             
             // Task header with title and priority
             const taskHeader = document.createElement('div');
@@ -1471,10 +2257,15 @@
             
             const taskTitle = document.createElement('div');
             taskTitle.className = 'task-title';
-            // Convert URLs in task title to clickable links
             taskTitle.innerHTML = makeLinksClickable(task.title);
-            // Add title attribute for truncated text
             taskTitle.title = task.title;
+            taskTitle.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'A') {
+                    makeEditable(taskTitle, (newContent) => {
+                        updateTaskTitle(task.id, newContent);
+                    });
+                }
+            });
             
             const taskPriority = document.createElement('div');
             taskPriority.className = `task-priority ${task.priority}`;
@@ -1483,10 +2274,68 @@
             taskHeader.appendChild(taskTitle);
             taskHeader.appendChild(taskPriority);
             
-            // Task date
+            // Task meta information
+            const taskMeta = document.createElement('div');
+            taskMeta.className = 'task-meta';
+            
             const taskDate = document.createElement('div');
             taskDate.className = 'task-date';
-            taskDate.textContent = formatDate(task.createdAt);
+            taskDate.innerHTML = `<span>📅</span> Created: ${formatDate(task.createdAt)}`;
+            
+            taskMeta.appendChild(taskDate);
+            
+            // Due date
+            if (task.dueDate) {
+                const dueDate = new Date(task.dueDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                let dueDateClass = '';
+                let dueDateText = '';
+                
+                if (dueDate < today) {
+                    dueDateClass = 'overdue';
+                    dueDateText = 'Overdue';
+                } else if (dueDate.getTime() === today.getTime()) {
+                    dueDateClass = 'due-soon';
+                    dueDateText = 'Due today';
+                } else if (dueDate.getTime() === today.getTime() + 86400000) {
+                    dueDateClass = 'due-soon';
+                    dueDateText = 'Due tomorrow';
+                } else {
+                    dueDateText = `Due: ${formatDate(task.dueDate)}`;
+                }
+                
+                const taskDueDate = document.createElement('div');
+                taskDueDate.className = `task-due-date ${dueDateClass}`;
+                taskDueDate.innerHTML = `<span>⏰</span> ${dueDateText}`;
+                taskMeta.appendChild(taskDueDate);
+            }
+            
+            // Tags
+            if (task.tags && task.tags.length > 0) {
+                const taskTags = document.createElement('div');
+                taskTags.className = 'task-tags';
+                
+                for (let i = 0; i < task.tags.length; i++) {
+                    const tagName = task.tags[i];
+                    const tag = tags.find(t => t.name === tagName);
+                    if (tag) {
+                        const taskTag = document.createElement('span');
+                        taskTag.className = 'task-tag';
+                        taskTag.style.backgroundColor = tag.color + '20';
+                        taskTag.style.color = tag.color;
+                        taskTag.style.border = `1px solid ${tag.color}40`;
+                        taskTag.innerHTML = `
+                            <span class="tag-color-small" style="background-color: ${tag.color}"></span>
+                            ${tag.name}
+                        `;
+                        taskTags.appendChild(taskTag);
+                    }
+                }
+                
+                taskMeta.appendChild(taskTags);
+            }
             
             // Subtasks section
             const subtasksSection = document.createElement('div');
@@ -1521,10 +2370,15 @@
                     
                     const subtaskTitle = document.createElement('span');
                     subtaskTitle.className = 'subtask-title';
-                    // Convert URLs in subtask title to clickable links
                     subtaskTitle.innerHTML = makeLinksClickable(subtask.title);
-                    // Add title attribute for truncated text
                     subtaskTitle.title = subtask.title;
+                    subtaskTitle.addEventListener('click', (e) => {
+                        if (e.target.tagName !== 'A') {
+                            makeEditable(subtaskTitle, (newContent) => {
+                                updateSubtaskTitle(task.id, subtask.id, newContent);
+                            });
+                        }
+                    });
                     
                     const deleteSubtaskBtn = document.createElement('button');
                     deleteSubtaskBtn.className = 'delete-subtask';
@@ -1570,7 +2424,7 @@
             addSubtaskForm.appendChild(addSubtaskBtn);
             subtasksSection.appendChild(addSubtaskForm);
 
-            // Deleted subtasks section (if any)
+            // Deleted subtasks section
             if (task.deletedSubtasks && task.deletedSubtasks.length > 0) {
                 const deletedSubtasksSection = document.createElement('div');
                 deletedSubtasksSection.className = 'deleted-subtasks-section';
@@ -1592,7 +2446,6 @@
                     const deletedSubtaskTitle = document.createElement('span');
                     deletedSubtaskTitle.className = 'deleted-subtask-title';
                     deletedSubtaskTitle.innerHTML = makeLinksClickable(subtask.title);
-                    // Add title attribute for truncated text
                     deletedSubtaskTitle.title = subtask.title;
                     
                     const restoreSubtaskBtn = document.createElement('button');
@@ -1629,13 +2482,146 @@
             taskActions.appendChild(deleteBtn);
             
             // Append all elements to the card
+            taskCard.appendChild(pinBtn);
             taskCard.appendChild(taskHeader);
-            taskCard.appendChild(taskDate);
+            taskCard.appendChild(taskMeta);
             taskCard.appendChild(subtasksSection);
             taskCard.appendChild(taskActions);
             
             return taskCard;
         }
+
+        // Render calendar view - REMOVED
+        // function renderCalendar() {
+        //     const now = new Date();
+        //     const currentMonth = now.getMonth();
+        //     const currentYear = now.getFullYear();
+            
+        //     // Get first day of month and number of days
+        //     const firstDay = new Date(currentYear, currentMonth, 1);
+        //     const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        //     const daysInMonth = lastDay.getDate();
+        //     const startingDay = firstDay.getDay();
+            
+        //     // Create calendar grid
+        //     const fragment = document.createDocumentFragment();
+            
+        //     // Add day headers
+        //     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        //     for (let i = 0; i < dayNames.length; i++) {
+        //         const dayHeader = document.createElement('div');
+        //         dayHeader.className = 'calendar-day-header';
+        //         dayHeader.textContent = dayNames[i];
+        //         fragment.appendChild(dayHeader);
+        //     }
+            
+        //     // Add empty cells for days before the first day of month
+        //     for (let i = 0; i < startingDay; i++) {
+        //         const emptyDay = document.createElement('div');
+        //         emptyDay.className = 'calendar-day other-month';
+        //         fragment.appendChild(emptyDay);
+        //     }
+            
+        //     // Add days of the month
+        //     for (let day = 1; day <= daysInMonth; day++) {
+        //         const date = new Date(currentYear, currentMonth, day);
+        //         const dateString = date.toISOString().split('T')[0];
+                
+        //         const calendarDay = document.createElement('div');
+        //         calendarDay.className = 'calendar-day';
+                
+        //         // Check if today
+        //         const today = new Date();
+        //         if (date.getDate() === today.getDate() && 
+        //             date.getMonth() === today.getMonth() && 
+        //             date.getFullYear() === today.getFullYear()) {
+        //             calendarDay.classList.add('today');
+        //         }
+                
+        //         // Day number
+        //         const dayNumber = document.createElement('div');
+        //         dayNumber.className = 'calendar-day-number';
+        //         dayNumber.textContent = day;
+        //         calendarDay.appendChild(dayNumber);
+                
+        //         // Get tasks for this day - FIXED: Now properly shows all tasks with due dates
+        //         const dayTasks = tasks.filter(task => {
+        //             if (!task.dueDate) return false;
+        //             const taskDueDate = new Date(task.dueDate);
+        //             const taskDueDateString = taskDueDate.toISOString().split('T')[0];
+        //             return taskDueDateString === dateString;
+        //         });
+                
+        //         if (dayTasks.length > 0) {
+        //             calendarDay.classList.add('has-tasks');
+                    
+        //             const tasksContainer = document.createElement('div');
+        //             tasksContainer.className = 'calendar-tasks';
+                    
+        //             for (let i = 0; i < Math.min(dayTasks.length, 3); i++) {
+        //                 const task = dayTasks[i];
+        //                 const taskElement = document.createElement('div');
+        //                 taskElement.className = 'calendar-task';
+                        
+        //                 // Add status class based on due date and completion
+        //                 const today = new Date();
+        //                 today.setHours(0, 0, 0, 0);
+        //                 const taskDueDate = new Date(task.dueDate);
+                        
+        //                 if (task.status === 'completed') {
+        //                     taskElement.style.opacity = '0.6';
+        //                 } else if (taskDueDate < today) {
+        //                     taskElement.classList.add('overdue');
+        //                 } else if (taskDueDate.getTime() === today.getTime() || 
+        //                           taskDueDate.getTime() === today.getTime() + 86400000) {
+        //                     taskElement.classList.add('due-soon');
+        //                 }
+                        
+        //                 taskElement.textContent = task.title;
+        //                 taskElement.title = `${task.title} (${task.priority})`;
+        //                 tasksContainer.appendChild(taskElement);
+        //             }
+                    
+        //             if (dayTasks.length > 3) {
+        //                 const moreTasks = document.createElement('div');
+        //                 moreTasks.className = 'calendar-task';
+        //                 moreTasks.textContent = `+${dayTasks.length - 3} more`;
+        //                 tasksContainer.appendChild(moreTasks);
+        //             }
+                    
+        //             calendarDay.appendChild(tasksContainer);
+        //         }
+                
+        //         // Add click event to show tasks for this day
+        //         calendarDay.addEventListener('click', () => {
+        //             if (dayTasks.length > 0) {
+        //                 // Switch to list view and filter by this date
+        //                 currentView = 'list';
+        //                 for (let i = 0; i < viewTabs.length; i++) {
+        //                     viewTabs[i].classList.remove('active');
+        //                 }
+        //                 viewTabs[0].classList.add('active');
+        //                 updateView();
+                        
+        //                 // Set the due date filter to show tasks for this date
+        //                 taskDueDateInput.value = dateString;
+        //                 currentSearch = dateString;
+        //                 searchInput.value = dateString;
+                        
+        //                 showToast(`Showing ${dayTasks.length} tasks for ${dateString}`, 'info');
+        //             } else {
+        //                 // If no tasks, just set the due date for new tasks
+        //                 taskDueDateInput.value = dateString;
+        //                 showToast(`Due date set to ${dateString}`, 'info');
+        //             }
+        //         });
+                
+        //         fragment.appendChild(calendarDay);
+        //     }
+            
+        //     calendarView.innerHTML = '';
+        //     calendarView.appendChild(fragment);
+        // }
 
         // Render trash with visibility control
         function renderTrash() {
@@ -1660,9 +2646,7 @@
                     
                     const taskTitle = document.createElement('div');
                     taskTitle.className = 'task-title';
-                    // Convert URLs in task title to clickable links (for trash items too)
                     taskTitle.innerHTML = makeLinksClickable(task.title);
-                    // Add title attribute for truncated text
                     taskTitle.title = task.title;
                     
                     const taskPriority = document.createElement('div');
@@ -1717,8 +2701,9 @@
                 const [restoredTask] = trash.splice(taskIndex, 1);
                 delete restoredTask.deletedAt;
                 tasks.push(restoredTask);
-                await saveTasks(); // Single transaction for both operations
+                await saveTasks();
                 renderTasks();
+                // renderCalendar(); // REMOVED
                 renderTrash();
                 showToast('Task restored from trash', 'success');
             }
@@ -1735,7 +2720,7 @@
             }
         }
 
-        // Restore all tasks from trash - ATOMIC OPERATION
+        // Restore all tasks from trash
         async function restoreAllFromTrash() {
             const trashLength = trash.length;
             if (trashLength === 0) {
@@ -1743,20 +2728,20 @@
                 return;
             }
             
-            // Batch operation
             for (let i = 0; i < trashLength; i++) {
                 delete trash[i].deletedAt;
                 tasks.push(trash[i]);
             }
             
-            trash.length = 0; // Clear array efficiently
-            await saveTasks(); // Single transaction
+            trash.length = 0;
+            await saveTasks();
             renderTasks();
+            // renderCalendar(); // REMOVED
             renderTrash();
             showToast('All tasks restored from trash', 'success');
         }
 
-        // Empty trash - ATOMIC OPERATION
+        // Empty trash
         async function emptyTrash() {
             const trashLength = trash.length;
             if (trashLength === 0) {
@@ -1765,7 +2750,7 @@
             }
             
             if (confirm('Are you sure you want to permanently delete all tasks in trash? This action cannot be undone.')) {
-                trash.length = 0; // Clear array efficiently
+                trash.length = 0;
                 await saveTasks();
                 renderTrash();
                 showToast('Trash emptied', 'success');
@@ -1774,14 +2759,14 @@
 
         // Generate Text report
         function generateTextReport() {
-            // Create a simple text-based report content
             let reportContent = `ALQAAB To Do List Report\n`;
             reportContent += `Generated on: ${new Date().toLocaleDateString()}\n\n`;
             
-            // Calculate summary
             const allTasks = tasks;
             let completedTasks = 0;
             let pendingTasks = 0;
+            let pinnedTasks = 0;
+            let overdueTasks = 0;
             
             for (let i = 0; i < allTasks.length; i++) {
                 if (allTasks[i].status === 'completed') {
@@ -1789,31 +2774,81 @@
                 } else {
                     pendingTasks++;
                 }
+                if (allTasks[i].pinned) {
+                    pinnedTasks++;
+                }
+                if (allTasks[i].dueDate && new Date(allTasks[i].dueDate) < new Date() && allTasks[i].status !== 'completed') {
+                    overdueTasks++;
+                }
             }
             
             reportContent += `SUMMARY\n`;
             reportContent += `Total Tasks: ${allTasks.length}\n`;
+            reportContent += `Pinned: ${pinnedTasks}\n`;
             reportContent += `Completed: ${completedTasks}\n`;
-            reportContent += `Pending: ${pendingTasks}\n\n`;
+            reportContent += `Pending: ${pendingTasks}\n`;
+            reportContent += `Overdue: ${overdueTasks}\n\n`;
             
             reportContent += `TASKS\n`;
             reportContent += `====================\n\n`;
             
-            for (let i = 0; i < allTasks.length; i++) {
-                const task = allTasks[i];
-                reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}]\n`;
-                reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
-                reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
-                
-                if (task.subtasks.length > 0) {
-                    reportContent += `   Subtasks:\n`;
-                    for (let j = 0; j < task.subtasks.length; j++) {
-                        const subtask = task.subtasks[j];
-                        reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
+            // Pinned tasks section
+            if (pinnedTasks > 0) {
+                reportContent += `PINNED TASKS\n`;
+                reportContent += `-------------\n`;
+                for (let i = 0; i < allTasks.length; i++) {
+                    const task = allTasks[i];
+                    if (task.pinned) {
+                        reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}] [PINNED]\n`;
+                        reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
+                        reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
+                        if (task.dueDate) {
+                            reportContent += `   Due: ${formatDate(task.dueDate)}\n`;
+                        }
+                        if (task.tags.length > 0) {
+                            reportContent += `   Tags: ${task.tags.join(', ')}\n`;
+                        }
+                        
+                        if (task.subtasks.length > 0) {
+                            reportContent += `   Subtasks:\n`;
+                            for (let j = 0; j < task.subtasks.length; j++) {
+                                const subtask = task.subtasks[j];
+                                reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
+                            }
+                        }
+                        
+                        reportContent += `\n`;
                     }
                 }
-                
                 reportContent += `\n`;
+            }
+            
+            // Other tasks section
+            reportContent += `OTHER TASKS\n`;
+            reportContent += `-------------\n`;
+            for (let i = 0; i < allTasks.length; i++) {
+                const task = allTasks[i];
+                if (!task.pinned) {
+                    reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}]\n`;
+                    reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
+                    reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
+                    if (task.dueDate) {
+                        reportContent += `   Due: ${formatDate(task.dueDate)}\n`;
+                    }
+                    if (task.tags.length > 0) {
+                        reportContent += `   Tags: ${task.tags.join(', ')}\n`;
+                    }
+                    
+                    if (task.subtasks.length > 0) {
+                        reportContent += `   Subtasks:\n`;
+                        for (let j = 0; j < task.subtasks.length; j++) {
+                            const subtask = task.subtasks[j];
+                            reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
+                        }
+                    }
+                    
+                    reportContent += `\n`;
+                }
             }
             
             // Create and download the text file
@@ -1830,11 +2865,12 @@
             showToast('Text report downloaded successfully', 'success');
         }
 
-        // Export data as JSON - ALWAYS LATEST STATE
+        // Export data as JSON
         function exportData() {
             const data = {
                 tasks: tasks,
                 trash: trash,
+                tags: tags,
                 exportDate: new Date().toISOString(),
                 version: 'ALQAAB To Do List v2'
             };
@@ -1854,32 +2890,38 @@
             showToast('Data exported successfully', 'success');
         }
 
-        // Import data from JSON file - NON-BLOCKING WITH BATCHING
+        // Import data from JSON file
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             const reader = new FileReader();
             reader.onload = function(e) {
-                // Use setTimeout to prevent UI freeze
                 setTimeout(async () => {
                     try {
                         const importedData = JSON.parse(e.target.result);
                         
                         if (confirm('This will replace all current data. Are you sure?')) {
-                            // Batch the data assignment
                             tasks = importedData.tasks || [];
                             trash = importedData.trash || [];
+                            tags = importedData.tags || tags;
                             
-                            // Ensure each task has deletedSubtasks array
                             for (let i = 0; i < tasks.length; i++) {
                                 if (!tasks[i].deletedSubtasks) {
                                     tasks[i].deletedSubtasks = [];
                                 }
+                                if (!tasks[i].tags) {
+                                    tasks[i].tags = [];
+                                }
+                                if (tasks[i].pinned === undefined) {
+                                    tasks[i].pinned = false;
+                                }
                             }
                             
                             await saveTasks();
+                            renderTagsFilter();
                             renderTasks();
+                            // renderCalendar(); // REMOVED
                             renderTrash();
                             showToast('Data imported successfully', 'success');
                         }
@@ -1887,7 +2929,6 @@
                         showToast('Error importing data: Invalid file format', 'error');
                     }
                     
-                    // Reset file input
                     event.target.value = '';
                 }, 0);
             };
@@ -1902,6 +2943,7 @@
                 trash.length = 0;
                 await saveTasks();
                 renderTasks();
+                // renderCalendar(); // REMOVED
                 renderTrash();
                 showToast('All data cleared', 'success');
             }
@@ -1916,7 +2958,6 @@
             const toastContainer = document.getElementById('toastContainer');
             toastContainer.appendChild(toast);
             
-            // Remove toast after 3 seconds
             setTimeout(() => {
                 toast.remove();
             }, 3000);
@@ -1935,6 +2976,8 @@
         // Simple sample tasks for initial setup
         function getSampleTasks() {
             const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
             
             return [
                 {
@@ -1943,8 +2986,11 @@
                     priority: 'medium',
                     status: 'pending',
                     createdAt: now.toISOString(),
+                    dueDate: tomorrow.toISOString().split('T')[0],
+                    tags: ['learning'],
                     subtasks: [],
-                    deletedSubtasks: []
+                    deletedSubtasks: [],
+                    pinned: true
                 },
                 {
                     id: generateId(),
@@ -1952,8 +2998,11 @@
                     priority: 'low',
                     status: 'pending',
                     createdAt: now.toISOString(),
+                    dueDate: null,
+                    tags: ['personal'],
                     subtasks: [],
-                    deletedSubtasks: []
+                    deletedSubtasks: [],
+                    pinned: false
                 }
             ];
         }
