@@ -1,10 +1,11 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALQAAB To Do List</title>
+    <title>ALQAAB Task Manager</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
     
     <!-- Service Worker Registration -->
@@ -40,6 +41,8 @@
             --transition: all 0.3s ease;
             --border-color: #e0e0e0;
             --completed-hover-bg: #e9ecef;
+            --footer-bg: linear-gradient(135deg, #2d3748, #4a5568);
+            --footer-text: #e2e8f0;
         }
 
         .dark-mode {
@@ -51,6 +54,8 @@
             --shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             --border-color: #333333;
             --completed-hover-bg: #2d2d2d;
+            --footer-bg: linear-gradient(135deg, #0f172a, #1e293b);
+            --footer-text: #cbd5e1;
         }
 
         /* Initial hidden state to prevent flash */
@@ -76,13 +81,15 @@
             color: var(--dark-text);
             transition: var(--transition);
             min-height: 100vh;
-            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            flex: 1;
         }
 
         /* Header Styles */
@@ -160,6 +167,90 @@
             font-size: 1.2rem;
             color: var(--dark-text);
             opacity: 0.7;
+        }
+
+        /* Projects Section */
+        .projects-section {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .projects-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .projects-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .project-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            transition: var(--transition);
+        }
+
+        .project-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .projects-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .project-item {
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .project-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .project-item.active {
+            background-color: var(--warning-color);
+            box-shadow: 0 0 0 2px var(--warning-color);
+        }
+
+        .project-item .delete-project {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            padding: 2px 5px;
+            border-radius: 50%;
+        }
+
+        .project-item .delete-project:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         /* Task Input Section */
@@ -255,7 +346,7 @@
             border-color: var(--primary-color);
         }
 
-        /* Tags Filter */
+        /* Tags Filter - Updated with delete button */
         .tags-filter {
             display: flex;
             flex-wrap: wrap;
@@ -288,34 +379,32 @@
             height: 12px;
             border-radius: 50%;
             display: inline-block;
+            flex-shrink: 0;
         }
 
-        /* View Tabs - REMOVED */
-        /* .view-tabs {
-            display: flex;
-            gap: 5px;
-            background-color: var(--card-bg);
-            border-radius: 25px;
-            padding: 5px;
-            box-shadow: var(--shadow);
-            margin-left: auto;
-        }
-
-        .view-tab {
-            padding: 8px 15px;
+        .delete-tag {
+            background: none;
             border: none;
-            background: transparent;
-            border-radius: 20px;
+            color: inherit;
             cursor: pointer;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            padding: 1px 3px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition);
-            color: var(--dark-text);
-            font-weight: 500;
         }
 
-        .view-tab.active {
-            background-color: var(--primary-color);
-            color: white;
-        } */
+        .delete-tag:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .delete-tag:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
 
         /* Task List - Card Style */
         .tasks-container {
@@ -324,14 +413,6 @@
             gap: 20px;
             margin: 20px 0;
         }
-
-        /* Calendar View - REMOVED */
-        /* .calendar-view {
-            display: none;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        } */
 
         .task-card {
             background-color: var(--card-bg);
@@ -516,6 +597,17 @@
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        .task-project {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            max-width: fit-content;
         }
 
         .task-due-date {
@@ -852,130 +944,6 @@
             color: white;
         }
 
-        /* Calendar View Styles - REMOVED */
-        /* .calendar-container {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin: 20px 0;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .calendar-nav-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: var(--dark-text);
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: var(--transition);
-        }
-
-        .calendar-nav-btn:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .calendar-month {
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-
-        .calendar-day-header {
-            text-align: center;
-            font-weight: 600;
-            padding: 10px;
-            font-size: 0.9rem;
-            color: var(--dark-text);
-            opacity: 0.7;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            padding: 5px;
-            cursor: pointer;
-            transition: var(--transition);
-            background-color: var(--card-bg);
-            position: relative;
-            min-height: 80px;
-        }
-
-        .calendar-day:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .calendar-day.other-month {
-            opacity: 0.3;
-        }
-
-        .calendar-day.today {
-            background-color: rgba(67, 97, 238, 0.1);
-            border-color: var(--primary-color);
-        }
-
-        .calendar-day.has-tasks::after {
-            content: '';
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 6px;
-            background-color: var(--primary-color);
-            border-radius: 50%;
-        }
-
-        .calendar-day-number {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .calendar-tasks {
-            margin-top: 3px;
-            max-height: 50px;
-            overflow-y: auto;
-        }
-
-        .calendar-task {
-            font-size: 0.7rem;
-            padding: 1px 3px;
-            margin-bottom: 1px;
-            border-radius: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            background-color: rgba(67, 97, 238, 0.1);
-        }
-
-        .calendar-task.overdue {
-            background-color: rgba(247, 37, 133, 0.1);
-        }
-
-        .calendar-task.due-soon {
-            background-color: rgba(248, 150, 30, 0.1);
-        } */
-
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -991,19 +959,63 @@
             opacity: 0.5;
         }
 
-        /* Footer */
+        /* Footer - UPDATED DESIGN */
         footer {
-            background-color: var(--card-bg);
-            color: var(--dark-text);
-            padding: 20px 0;
-            margin-top: 40px;
-            text-align: center;
-            border-top: 1px solid var(--border-color);
+            background: var(--footer-bg);
+            color: var(--footer-text);
+            padding: 30px 0 20px;
+            margin-top: 50px;
+            border-top: 3px solid var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color), var(--warning-color));
         }
 
         .footer-content {
             font-size: 0.9rem;
-            opacity: 0.8;
+            opacity: 0.9;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .footer-content p {
+            margin-bottom: 8px;
+        }
+
+        .footer-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .footer-version {
+            font-weight: 600;
+            color: var(--primary-light);
+            font-size: 0.95rem;
+        }
+
+        .footer-offline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .footer-copyright {
+            opacity: 0.7;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+            margin-top: 15px;
         }
 
         /* Toast Notifications */
@@ -1205,14 +1217,6 @@
                 grid-template-columns: 1fr;
             }
 
-            /* .calendar-view {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-
-            .calendar-day {
-                min-height: 60px;
-            } */
-
             .settings-options {
                 grid-template-columns: 1fr;
             }
@@ -1246,10 +1250,9 @@
                 align-items: stretch;
             }
 
-            /* .view-tabs {
-                margin-left: 0;
-                justify-content: center;
-            } */
+            .projects-controls {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -1258,7 +1261,7 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <h1 class="app-title">ALQAAB To Do List</h1>
+                <h1 class="app-title">ALQAAB Task Manager</h1>
                 <button class="theme-toggle" id="themeToggle">
                     <span>🌙</span> Dark Mode
                 </button>
@@ -1276,6 +1279,18 @@
             </div>
         </div>
 
+        <!-- Projects Section -->
+        <div class="projects-section">
+            <h2 class="projects-title">📁 Projects</h2>
+            <div class="projects-controls">
+                <input type="text" id="newProjectInput" placeholder="New project name" class="project-input">
+                <button class="btn btn-primary" id="addProjectBtn">+ Add Project</button>
+            </div>
+            <div class="projects-list" id="projectsList">
+                <!-- Projects will be dynamically inserted here -->
+            </div>
+        </div>
+
         <!-- Task Input Section -->
         <div class="task-input-section">
             <div class="task-input-row">
@@ -1290,6 +1305,13 @@
                         <option value="low">Low</option>
                         <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskProject">Project</label>
+                    <select class="form-control" id="taskProject">
+                        <!-- Options will be dynamically populated -->
                     </select>
                 </div>
 
@@ -1328,15 +1350,9 @@
                 <option value="priority">Sort by Priority</option>
                 <option value="title">Sort by Title</option>
             </select>
-
-            <!-- View Tabs - REMOVED -->
-            <!-- <div class="view-tabs">
-                <button class="view-tab active" data-view="list">📋 List</button>
-                <button class="view-tab" data-view="calendar">📅 Calendar</button>
-            </div> -->
         </div>
 
-        <!-- Tags Filter -->
+        <!-- Tags Filter - UPDATED with delete buttons -->
         <div class="tags-filter" id="tagsFilter">
             <!-- Tags will be dynamically inserted here -->
         </div>
@@ -1345,11 +1361,6 @@
         <div class="tasks-container" id="tasksList">
             <!-- Tasks will be dynamically inserted here -->
         </div>
-
-        <!-- Calendar View - REMOVED -->
-        <!-- <div class="calendar-view" id="calendarView">
-            <!- Calendar will be dynamically inserted here ->
-        </div> -->
 
         <!-- Empty State -->
         <div class="empty-state" id="emptyState" style="display: none;">
@@ -1426,13 +1437,17 @@
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer - UPDATED DESIGN -->
     <footer>
         <div class="container">
             <div class="footer-content">
-                <p>ALQAAB To Do List v.2 (Nov 27, 2025)</p>
-                <p>Works offline – Data saved in your browser</p>
-                <p>© 2025 ALQAAB Org. Developed by ALQAAB Web Studio | Shahbaz Ali.</p>
+                <p class="footer-version">ALQAAB Task Manager v.2.1 (Nov 27, 2025)</p>
+                <p class="footer-offline">
+                    <span>🌐</span> Works offline – Data saved in your browser
+                </p>
+                <p class="footer-copyright">
+                    © 2025 ALQAAB Org. Developed by ALQAAB Web Studio | Shahbaz Ali.
+                </p>
             </div>
         </div>
     </footer>
@@ -1449,7 +1464,6 @@
         let trash = [];
         let currentFilter = 'all';
         let currentSort = localStorage.getItem('alqaab-todo-sort') || 'createdAt';
-        let currentView = 'list';
         let currentSearch = '';
         let currentTagFilter = null;
         let tags = JSON.parse(localStorage.getItem('alqaab-todo-tags')) || [
@@ -1460,6 +1474,14 @@
             { name: 'learning', color: '#3f37c9' },
             { name: 'urgent', color: '#dc2626' }
         ];
+        
+        // Projects State
+        let projects = JSON.parse(localStorage.getItem('alqaab-todo-projects')) || [
+            { id: 'default', name: 'All Tasks', color: '#4361ee' },
+            { id: 'personal', name: 'Personal', color: '#4cc9f0' },
+            { id: 'work', name: 'Work', color: '#f8961e' }
+        ];
+        let currentProject = 'default';
 
         // IndexedDB setup for persistent storage
         const DB_NAME = 'ALQAABTodoDB';
@@ -1472,20 +1494,19 @@
 
         // DOM Elements
         const tasksList = document.getElementById('tasksList');
-        // const calendarView = document.getElementById('calendarView'); // REMOVED
         const emptyState = document.getElementById('emptyState');
         const trashSection = document.getElementById('trashSection');
         const trashList = document.getElementById('trashList');
         const emptyTrashState = document.getElementById('emptyTrashState');
         const themeToggle = document.getElementById('themeToggle');
         const filterTabs = document.querySelectorAll('.filter-tab');
-        // const viewTabs = document.querySelectorAll('.view-tab'); // REMOVED
         const sortSelect = document.getElementById('sortSelect');
         const searchInput = document.getElementById('searchInput');
         const tagsFilter = document.getElementById('tagsFilter');
         const addTaskBtn = document.getElementById('addTaskBtn');
         const taskTitleInput = document.getElementById('taskTitle');
         const taskPrioritySelect = document.getElementById('taskPriority');
+        const taskProjectSelect = document.getElementById('taskProject');
         const taskDueDateInput = document.getElementById('taskDueDate');
         const taskTagsInput = document.getElementById('taskTags');
         const generateTextReportBtn = document.getElementById('generateTextReportBtn');
@@ -1496,6 +1517,11 @@
         const importFileInput = document.getElementById('importFileInput');
         const restoreAllBtn = document.getElementById('restoreAllBtn');
         const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+        
+        // Projects Elements
+        const addProjectBtn = document.getElementById('addProjectBtn');
+        const newProjectInput = document.getElementById('newProjectInput');
+        const projectsList = document.getElementById('projectsList');
 
         // Initialize the app
         async function init() {
@@ -1504,9 +1530,10 @@
             
             await loadData();
             setupEventListeners();
+            renderProjects();
             renderTagsFilter();
+            populateProjectDropdown();
             renderTasks();
-            // renderCalendar(); // REMOVED
             renderTrash();
             
             // Mark body as loaded to trigger fade-in
@@ -1557,8 +1584,8 @@
             });
         }
 
-        // Save tasks to IndexedDB
-        async function saveTasks() {
+        // Save data to IndexedDB
+        async function saveData() {
             try {
                 const db = await initDB();
                 
@@ -1569,6 +1596,7 @@
                         localStorage.setItem('alqaab-todo-tasks', JSON.stringify(tasks));
                         localStorage.setItem('alqaab-todo-trash', JSON.stringify(trash));
                         localStorage.setItem('alqaab-todo-tags', JSON.stringify(tags));
+                        localStorage.setItem('alqaab-todo-projects', JSON.stringify(projects));
                         resolve();
                     };
                     
@@ -1597,6 +1625,7 @@
                 localStorage.setItem('alqaab-todo-tasks', JSON.stringify(tasks));
                 localStorage.setItem('alqaab-todo-trash', JSON.stringify(trash));
                 localStorage.setItem('alqaab-todo-tags', JSON.stringify(tags));
+                localStorage.setItem('alqaab-todo-projects', JSON.stringify(projects));
             }
         }
 
@@ -1643,6 +1672,9 @@
                                 if (!tasks[i].tags) {
                                     tasks[i].tags = [];
                                 }
+                                if (!tasks[i].project) {
+                                    tasks[i].project = 'default';
+                                }
                             }
                         } else {
                             const savedTasks = localStorage.getItem('alqaab-todo-tasks');
@@ -1653,6 +1685,9 @@
                                 }
                                 if (!tasks[i].tags) {
                                     tasks[i].tags = [];
+                                }
+                                if (!tasks[i].project) {
+                                    tasks[i].project = 'default';
                                 }
                             }
                         }
@@ -1677,10 +1712,12 @@
                 const savedTasks = localStorage.getItem('alqaab-todo-tasks');
                 const savedTrash = localStorage.getItem('alqaab-todo-trash');
                 const savedTags = localStorage.getItem('alqaab-todo-tags');
+                const savedProjects = localStorage.getItem('alqaab-todo-projects');
                 
                 tasks = savedTasks ? JSON.parse(savedTasks) : getSampleTasks();
                 trash = savedTrash ? JSON.parse(savedTrash) : [];
                 tags = savedTags ? JSON.parse(savedTags) : tags;
+                projects = savedProjects ? JSON.parse(savedProjects) : projects;
                 
                 for (let i = 0; i < tasks.length; i++) {
                     if (!tasks[i].deletedSubtasks) {
@@ -1688,6 +1725,9 @@
                     }
                     if (!tasks[i].tags) {
                         tasks[i].tags = [];
+                    }
+                    if (!tasks[i].project) {
+                        tasks[i].project = 'default';
                     }
                 }
             }
@@ -1714,21 +1754,8 @@
                     this.classList.add('active');
                     currentFilter = this.dataset.filter;
                     renderTasks();
-                    // renderCalendar(); // REMOVED
                 });
             }
-            
-            // View tabs - REMOVED
-            // for (let i = 0; i < viewTabs.length; i++) {
-            //     viewTabs[i].addEventListener('click', function() {
-            //         for (let j = 0; j < viewTabs.length; j++) {
-            //             viewTabs[j].classList.remove('active');
-            //         }
-            //         this.classList.add('active');
-            //         currentView = this.dataset.view;
-            //         updateView();
-            //     });
-            // }
             
             // Sort
             sortSelect.value = currentSort;
@@ -1736,14 +1763,12 @@
                 currentSort = e.target.value;
                 localStorage.setItem('alqaab-todo-sort', currentSort);
                 renderTasks();
-                // renderCalendar(); // REMOVED
             });
             
             // Search - FIXED: Now searches in both task titles and subtask titles
             searchInput.addEventListener('input', (e) => {
                 currentSearch = e.target.value.toLowerCase();
                 renderTasks();
-                // renderCalendar(); // REMOVED
             });
             
             // Add task button
@@ -1768,26 +1793,140 @@
             
             // File import
             importFileInput.addEventListener('change', importData);
-
-            // Set current date as default for due date
-            const today = new Date().toISOString().split('T')[0];
-            taskDueDateInput.value = today;
+            
+            // Add project button
+            addProjectBtn.addEventListener('click', addProject);
+            
+            // Add project on Enter key
+            newProjectInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addProject();
+                }
+            });
         }
 
-        // Update view based on current view - REMOVED
-        // function updateView() {
-        //     if (currentView === 'list') {
-        //         tasksList.style.display = 'grid';
-        //         calendarView.style.display = 'none';
-        //         renderTasks();
-        //     } else {
-        //         tasksList.style.display = 'none';
-        //         calendarView.style.display = 'grid';
-        //         renderCalendar();
-        //     }
-        // }
+        // Add a new project
+        async function addProject() {
+            const projectName = newProjectInput.value.trim();
+            if (!projectName) {
+                showToast('Project name is required', 'error');
+                return;
+            }
+            
+            // Check if project already exists
+            const existingProject = projects.find(p => p.name.toLowerCase() === projectName.toLowerCase());
+            if (existingProject) {
+                showToast('Project already exists', 'error');
+                return;
+            }
+            
+            const projectId = generateId();
+            const colors = ['#4361ee', '#4cc9f0', '#f8961e', '#f72585', '#3f37c9', '#10b981', '#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            const newProject = {
+                id: projectId,
+                name: projectName,
+                color: randomColor
+            };
+            
+            projects.push(newProject);
+            await saveData();
+            renderProjects();
+            populateProjectDropdown();
+            newProjectInput.value = '';
+            showToast('Project added successfully', 'success');
+        }
 
-        // Render tags filter
+        // Render projects list
+        function renderProjects() {
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < projects.length; i++) {
+                const project = projects[i];
+                const projectItem = document.createElement('div');
+                projectItem.className = `project-item ${currentProject === project.id ? 'active' : ''}`;
+                projectItem.style.backgroundColor = project.color;
+                projectItem.innerHTML = `
+                    <span>${project.name}</span>
+                    ${project.id !== 'default' ? '<button class="delete-project" data-project-id="' + project.id + '">×</button>' : ''}
+                `;
+                
+                projectItem.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('delete-project')) {
+                        currentProject = project.id;
+                        renderProjects();
+                        renderTasks();
+                    }
+                });
+                
+                // Delete button for non-default projects
+                if (project.id !== 'default') {
+                    const deleteBtn = projectItem.querySelector('.delete-project');
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteProject(project.id);
+                    });
+                }
+                
+                fragment.appendChild(projectItem);
+            }
+            
+            projectsList.innerHTML = '';
+            projectsList.appendChild(fragment);
+        }
+
+        // Delete a project
+        async function deleteProject(projectId) {
+            if (confirm('Delete this project? Tasks in this project will be moved to "All Tasks".')) {
+                // Move tasks to default project
+                let movedTasks = 0;
+                for (let i = 0; i < tasks.length; i++) {
+                    if (tasks[i].project === projectId) {
+                        tasks[i].project = 'default';
+                        movedTasks++;
+                    }
+                }
+                
+                // Remove project from array
+                const projectIndex = projects.findIndex(p => p.id === projectId);
+                if (projectIndex !== -1) {
+                    projects.splice(projectIndex, 1);
+                }
+                
+                // If current project was deleted, switch to default
+                if (currentProject === projectId) {
+                    currentProject = 'default';
+                }
+                
+                await saveData();
+                renderProjects();
+                populateProjectDropdown();
+                renderTasks();
+                showToast(`Project deleted. ${movedTasks} tasks moved to "All Tasks".`, 'success');
+            }
+        }
+
+        // Populate project dropdown in task input form
+        function populateProjectDropdown() {
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < projects.length; i++) {
+                const project = projects[i];
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                if (project.id === 'default') {
+                    option.selected = true;
+                }
+                fragment.appendChild(option);
+            }
+            
+            taskProjectSelect.innerHTML = '';
+            taskProjectSelect.appendChild(fragment);
+        }
+
+        // Render tags filter with delete buttons
         function renderTagsFilter() {
             const fragment = document.createDocumentFragment();
             
@@ -1799,11 +1938,10 @@
                 currentTagFilter = null;
                 renderTagsFilter();
                 renderTasks();
-                // renderCalendar(); // REMOVED
             });
             fragment.appendChild(clearTag);
             
-            // Tag filters
+            // Tag filters with delete buttons
             for (let i = 0; i < tags.length; i++) {
                 const tag = tags[i];
                 const tagFilter = document.createElement('button');
@@ -1811,13 +1949,25 @@
                 tagFilter.innerHTML = `
                     <span class="tag-color" style="background-color: ${tag.color}"></span>
                     ${tag.name}
+                    <button class="delete-tag" data-tag-name="${tag.name}">×</button>
                 `;
-                tagFilter.addEventListener('click', () => {
-                    currentTagFilter = currentTagFilter === tag.name ? null : tag.name;
-                    renderTagsFilter();
-                    renderTasks();
-                    // renderCalendar(); // REMOVED
+                
+                // Tag click to filter
+                tagFilter.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('delete-tag')) {
+                        currentTagFilter = currentTagFilter === tag.name ? null : tag.name;
+                        renderTagsFilter();
+                        renderTasks();
+                    }
                 });
+                
+                // Delete tag button
+                const deleteBtn = tagFilter.querySelector('.delete-tag');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteTag(tag.name);
+                });
+                
                 fragment.appendChild(tagFilter);
             }
             
@@ -1825,11 +1975,43 @@
             tagsFilter.appendChild(fragment);
         }
 
+        // Delete a tag
+        async function deleteTag(tagName) {
+            if (confirm(`Delete tag "${tagName}"? This will remove the tag from all tasks.`)) {
+                // Remove tag from tags array
+                const tagIndex = tags.findIndex(t => t.name === tagName);
+                if (tagIndex !== -1) {
+                    tags.splice(tagIndex, 1);
+                }
+                
+                // Remove tag from all tasks
+                let removedFromTasks = 0;
+                for (let i = 0; i < tasks.length; i++) {
+                    const tagIndexInTask = tasks[i].tags.indexOf(tagName);
+                    if (tagIndexInTask !== -1) {
+                        tasks[i].tags.splice(tagIndexInTask, 1);
+                        removedFromTasks++;
+                    }
+                }
+                
+                // If this tag was currently filtered, reset filter
+                if (currentTagFilter === tagName) {
+                    currentTagFilter = null;
+                }
+                
+                await saveData();
+                renderTagsFilter();
+                renderTasks();
+                showToast(`Tag "${tagName}" deleted. Removed from ${removedFromTasks} tasks.`, 'success');
+            }
+        }
+
         // Add a new task
         async function addTask() {
             const title = taskTitleInput.value.trim();
             const priority = taskPrioritySelect.value;
-            const dueDate = taskDueDateInput.value;
+            const project = taskProjectSelect.value;
+            const dueDate = taskDueDateInput.value; // This will be empty string if not selected
             const tagsInput = taskTagsInput.value.trim();
             
             if (!title) {
@@ -1862,9 +2044,10 @@
                 id: generateId(),
                 title: title,
                 priority: priority,
+                project: project,
                 status: 'pending',
                 createdAt: now.toISOString(),
-                dueDate: dueDate || null,
+                dueDate: dueDate || null, // Store null if dueDate is empty
                 tags: taskTags,
                 subtasks: [],
                 deletedSubtasks: [],
@@ -1872,14 +2055,14 @@
             };
             
             tasks.push(newTask);
-            await saveTasks();
+            await saveData();
             renderTagsFilter();
             renderTasks();
-            // renderCalendar(); // REMOVED
             
-            // Reset form
+            // Reset form - clear all fields
             taskTitleInput.value = '';
             taskTagsInput.value = '';
+            taskDueDateInput.value = ''; // Clear due date field after adding task
             taskTitleInput.focus();
             
             showToast('Task added successfully', 'success');
@@ -1897,9 +2080,8 @@
                     }
                 }
                 
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 showToast(`Task marked as ${task.status}`, 'success');
             }
         }
@@ -1909,9 +2091,8 @@
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.pinned = !task.pinned;
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 showToast(`Task ${task.pinned ? 'pinned' : 'unpinned'}`, 'success');
             }
         }
@@ -1923,9 +2104,8 @@
                 const [deletedTask] = tasks.splice(taskIndex, 1);
                 deletedTask.deletedAt = new Date().toISOString();
                 trash.push(deletedTask);
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 renderTrash();
                 showToast('Task moved to trash', 'success');
             }
@@ -1942,9 +2122,8 @@
                 };
                 
                 task.subtasks.push(newSubtask);
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 showToast('Subtask added', 'success');
             }
         }
@@ -1971,9 +2150,8 @@
                         task.status = 'pending';
                     }
                     
-                    await saveTasks();
+                    await saveData();
                     renderTasks();
-                    // renderCalendar(); // REMOVED
                 }
             }
         }
@@ -1986,9 +2164,8 @@
                 if (subtaskIndex !== -1) {
                     const [deletedSubtask] = task.subtasks.splice(subtaskIndex, 1);
                     task.deletedSubtasks.push(deletedSubtask);
-                    await saveTasks();
+                    await saveData();
                     renderTasks();
-                    // renderCalendar(); // REMOVED
                     showToast('Subtask moved to deleted items', 'success');
                 }
             }
@@ -2002,9 +2179,8 @@
                 if (subtaskIndex !== -1) {
                     const [restoredSubtask] = task.deletedSubtasks.splice(subtaskIndex, 1);
                     task.subtasks.push(restoredSubtask);
-                    await saveTasks();
+                    await saveData();
                     renderTasks();
-                    // renderCalendar(); // REMOVED
                     showToast('Subtask restored', 'success');
                 }
             }
@@ -2015,9 +2191,8 @@
             const task = tasks.find(t => t.id === taskId);
             if (task && newTitle.trim()) {
                 task.title = newTitle.trim();
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 showToast('Task title updated', 'success');
             }
         }
@@ -2029,9 +2204,8 @@
                 const subtask = task.subtasks.find(s => s.id === subtaskId);
                 if (subtask && newTitle.trim()) {
                     subtask.title = newTitle.trim();
-                    await saveTasks();
+                    await saveData();
                     renderTasks();
-                    // renderCalendar(); // REMOVED
                     showToast('Subtask title updated', 'success');
                 }
             }
@@ -2042,9 +2216,8 @@
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.dueDate = newDueDate;
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 showToast('Due date updated', 'success');
             }
         }
@@ -2146,7 +2319,13 @@
                     tagMatch = task.tags.includes(currentTagFilter);
                 }
                 
-                if (statusMatch && searchMatch && tagMatch) {
+                // Filter by project
+                let projectMatch = true;
+                if (currentProject !== 'default') {
+                    projectMatch = task.project === currentProject;
+                }
+                
+                if (statusMatch && searchMatch && tagMatch && projectMatch) {
                     filteredTasks.push(task);
                 }
             }
@@ -2283,6 +2462,23 @@
             taskDate.innerHTML = `<span>📅</span> Created: ${formatDate(task.createdAt)}`;
             
             taskMeta.appendChild(taskDate);
+            
+            // Project badge
+            if (task.project && task.project !== 'default') {
+                const project = projects.find(p => p.id === task.project);
+                if (project) {
+                    const taskProject = document.createElement('div');
+                    taskProject.className = 'task-project';
+                    taskProject.style.backgroundColor = project.color + '20';
+                    taskProject.style.color = project.color;
+                    taskProject.style.border = `1px solid ${project.color}40`;
+                    taskProject.innerHTML = `
+                        <span class="tag-color-small" style="background-color: ${project.color}"></span>
+                        ${project.name}
+                    `;
+                    taskMeta.appendChild(taskProject);
+                }
+            }
             
             // Due date
             if (task.dueDate) {
@@ -2491,138 +2687,6 @@
             return taskCard;
         }
 
-        // Render calendar view - REMOVED
-        // function renderCalendar() {
-        //     const now = new Date();
-        //     const currentMonth = now.getMonth();
-        //     const currentYear = now.getFullYear();
-            
-        //     // Get first day of month and number of days
-        //     const firstDay = new Date(currentYear, currentMonth, 1);
-        //     const lastDay = new Date(currentYear, currentMonth + 1, 0);
-        //     const daysInMonth = lastDay.getDate();
-        //     const startingDay = firstDay.getDay();
-            
-        //     // Create calendar grid
-        //     const fragment = document.createDocumentFragment();
-            
-        //     // Add day headers
-        //     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        //     for (let i = 0; i < dayNames.length; i++) {
-        //         const dayHeader = document.createElement('div');
-        //         dayHeader.className = 'calendar-day-header';
-        //         dayHeader.textContent = dayNames[i];
-        //         fragment.appendChild(dayHeader);
-        //     }
-            
-        //     // Add empty cells for days before the first day of month
-        //     for (let i = 0; i < startingDay; i++) {
-        //         const emptyDay = document.createElement('div');
-        //         emptyDay.className = 'calendar-day other-month';
-        //         fragment.appendChild(emptyDay);
-        //     }
-            
-        //     // Add days of the month
-        //     for (let day = 1; day <= daysInMonth; day++) {
-        //         const date = new Date(currentYear, currentMonth, day);
-        //         const dateString = date.toISOString().split('T')[0];
-                
-        //         const calendarDay = document.createElement('div');
-        //         calendarDay.className = 'calendar-day';
-                
-        //         // Check if today
-        //         const today = new Date();
-        //         if (date.getDate() === today.getDate() && 
-        //             date.getMonth() === today.getMonth() && 
-        //             date.getFullYear() === today.getFullYear()) {
-        //             calendarDay.classList.add('today');
-        //         }
-                
-        //         // Day number
-        //         const dayNumber = document.createElement('div');
-        //         dayNumber.className = 'calendar-day-number';
-        //         dayNumber.textContent = day;
-        //         calendarDay.appendChild(dayNumber);
-                
-        //         // Get tasks for this day - FIXED: Now properly shows all tasks with due dates
-        //         const dayTasks = tasks.filter(task => {
-        //             if (!task.dueDate) return false;
-        //             const taskDueDate = new Date(task.dueDate);
-        //             const taskDueDateString = taskDueDate.toISOString().split('T')[0];
-        //             return taskDueDateString === dateString;
-        //         });
-                
-        //         if (dayTasks.length > 0) {
-        //             calendarDay.classList.add('has-tasks');
-                    
-        //             const tasksContainer = document.createElement('div');
-        //             tasksContainer.className = 'calendar-tasks';
-                    
-        //             for (let i = 0; i < Math.min(dayTasks.length, 3); i++) {
-        //                 const task = dayTasks[i];
-        //                 const taskElement = document.createElement('div');
-        //                 taskElement.className = 'calendar-task';
-                        
-        //                 // Add status class based on due date and completion
-        //                 const today = new Date();
-        //                 today.setHours(0, 0, 0, 0);
-        //                 const taskDueDate = new Date(task.dueDate);
-                        
-        //                 if (task.status === 'completed') {
-        //                     taskElement.style.opacity = '0.6';
-        //                 } else if (taskDueDate < today) {
-        //                     taskElement.classList.add('overdue');
-        //                 } else if (taskDueDate.getTime() === today.getTime() || 
-        //                           taskDueDate.getTime() === today.getTime() + 86400000) {
-        //                     taskElement.classList.add('due-soon');
-        //                 }
-                        
-        //                 taskElement.textContent = task.title;
-        //                 taskElement.title = `${task.title} (${task.priority})`;
-        //                 tasksContainer.appendChild(taskElement);
-        //             }
-                    
-        //             if (dayTasks.length > 3) {
-        //                 const moreTasks = document.createElement('div');
-        //                 moreTasks.className = 'calendar-task';
-        //                 moreTasks.textContent = `+${dayTasks.length - 3} more`;
-        //                 tasksContainer.appendChild(moreTasks);
-        //             }
-                    
-        //             calendarDay.appendChild(tasksContainer);
-        //         }
-                
-        //         // Add click event to show tasks for this day
-        //         calendarDay.addEventListener('click', () => {
-        //             if (dayTasks.length > 0) {
-        //                 // Switch to list view and filter by this date
-        //                 currentView = 'list';
-        //                 for (let i = 0; i < viewTabs.length; i++) {
-        //                     viewTabs[i].classList.remove('active');
-        //                 }
-        //                 viewTabs[0].classList.add('active');
-        //                 updateView();
-                        
-        //                 // Set the due date filter to show tasks for this date
-        //                 taskDueDateInput.value = dateString;
-        //                 currentSearch = dateString;
-        //                 searchInput.value = dateString;
-                        
-        //                 showToast(`Showing ${dayTasks.length} tasks for ${dateString}`, 'info');
-        //             } else {
-        //                 // If no tasks, just set the due date for new tasks
-        //                 taskDueDateInput.value = dateString;
-        //                 showToast(`Due date set to ${dateString}`, 'info');
-        //             }
-        //         });
-                
-        //         fragment.appendChild(calendarDay);
-        //     }
-            
-        //     calendarView.innerHTML = '';
-        //     calendarView.appendChild(fragment);
-        // }
-
         // Render trash with visibility control
         function renderTrash() {
             const fragment = document.createDocumentFragment();
@@ -2701,9 +2765,8 @@
                 const [restoredTask] = trash.splice(taskIndex, 1);
                 delete restoredTask.deletedAt;
                 tasks.push(restoredTask);
-                await saveTasks();
+                await saveData();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 renderTrash();
                 showToast('Task restored from trash', 'success');
             }
@@ -2714,7 +2777,7 @@
             const taskIndex = trash.findIndex(t => t.id === taskId);
             if (taskIndex !== -1) {
                 trash.splice(taskIndex, 1);
-                await saveTasks();
+                await saveData();
                 renderTrash();
                 showToast('Task permanently deleted', 'success');
             }
@@ -2734,9 +2797,8 @@
             }
             
             trash.length = 0;
-            await saveTasks();
+            await saveData();
             renderTasks();
-            // renderCalendar(); // REMOVED
             renderTrash();
             showToast('All tasks restored from trash', 'success');
         }
@@ -2751,7 +2813,7 @@
             
             if (confirm('Are you sure you want to permanently delete all tasks in trash? This action cannot be undone.')) {
                 trash.length = 0;
-                await saveTasks();
+                await saveData();
                 renderTrash();
                 showToast('Trash emptied', 'success');
             }
@@ -2759,7 +2821,7 @@
 
         // Generate Text report
         function generateTextReport() {
-            let reportContent = `ALQAAB To Do List Report\n`;
+            let reportContent = `ALQAAB Task Manager Report\n`;
             reportContent += `Generated on: ${new Date().toLocaleDateString()}\n\n`;
             
             const allTasks = tasks;
@@ -2768,37 +2830,61 @@
             let pinnedTasks = 0;
             let overdueTasks = 0;
             
+            // Group tasks by project
+            const tasksByProject = {};
+            
             for (let i = 0; i < allTasks.length; i++) {
-                if (allTasks[i].status === 'completed') {
+                const task = allTasks[i];
+                const projectName = getProjectName(task.project);
+                
+                if (!tasksByProject[projectName]) {
+                    tasksByProject[projectName] = [];
+                }
+                tasksByProject[projectName].push(task);
+                
+                if (task.status === 'completed') {
                     completedTasks++;
                 } else {
                     pendingTasks++;
                 }
-                if (allTasks[i].pinned) {
+                if (task.pinned) {
                     pinnedTasks++;
                 }
-                if (allTasks[i].dueDate && new Date(allTasks[i].dueDate) < new Date() && allTasks[i].status !== 'completed') {
+                if (task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed') {
                     overdueTasks++;
                 }
             }
             
             reportContent += `SUMMARY\n`;
             reportContent += `Total Tasks: ${allTasks.length}\n`;
+            reportContent += `Projects: ${Object.keys(tasksByProject).length}\n`;
             reportContent += `Pinned: ${pinnedTasks}\n`;
             reportContent += `Completed: ${completedTasks}\n`;
             reportContent += `Pending: ${pendingTasks}\n`;
             reportContent += `Overdue: ${overdueTasks}\n\n`;
             
-            reportContent += `TASKS\n`;
+            reportContent += `TASKS BY PROJECT\n`;
             reportContent += `====================\n\n`;
             
-            // Pinned tasks section
-            if (pinnedTasks > 0) {
-                reportContent += `PINNED TASKS\n`;
-                reportContent += `-------------\n`;
-                for (let i = 0; i < allTasks.length; i++) {
-                    const task = allTasks[i];
-                    if (task.pinned) {
+            // Sort projects alphabetically
+            const sortedProjects = Object.keys(tasksByProject).sort();
+            
+            for (let p = 0; p < sortedProjects.length; p++) {
+                const projectName = sortedProjects[p];
+                const projectTasks = tasksByProject[projectName];
+                
+                reportContent += `PROJECT: ${projectName.toUpperCase()}\n`;
+                reportContent += `${'-'.repeat(50)}\n\n`;
+                
+                // Separate pinned and unpinned tasks within the project
+                const pinnedProjectTasks = projectTasks.filter(t => t.pinned);
+                const unpinnedProjectTasks = projectTasks.filter(t => !t.pinned);
+                
+                // Pinned tasks in this project
+                if (pinnedProjectTasks.length > 0) {
+                    reportContent += `PINNED TASKS\n`;
+                    for (let i = 0; i < pinnedProjectTasks.length; i++) {
+                        const task = pinnedProjectTasks[i];
                         reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}] [PINNED]\n`;
                         reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
                         reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
@@ -2816,39 +2902,37 @@
                                 reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
                             }
                         }
-                        
                         reportContent += `\n`;
                     }
                 }
-                reportContent += `\n`;
-            }
-            
-            // Other tasks section
-            reportContent += `OTHER TASKS\n`;
-            reportContent += `-------------\n`;
-            for (let i = 0; i < allTasks.length; i++) {
-                const task = allTasks[i];
-                if (!task.pinned) {
-                    reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}]\n`;
-                    reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
-                    reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
-                    if (task.dueDate) {
-                        reportContent += `   Due: ${formatDate(task.dueDate)}\n`;
-                    }
-                    if (task.tags.length > 0) {
-                        reportContent += `   Tags: ${task.tags.join(', ')}\n`;
-                    }
-                    
-                    if (task.subtasks.length > 0) {
-                        reportContent += `   Subtasks:\n`;
-                        for (let j = 0; j < task.subtasks.length; j++) {
-                            const subtask = task.subtasks[j];
-                            reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
+                
+                // Other tasks in this project
+                if (unpinnedProjectTasks.length > 0) {
+                    reportContent += `OTHER TASKS\n`;
+                    for (let i = 0; i < unpinnedProjectTasks.length; i++) {
+                        const task = unpinnedProjectTasks[i];
+                        reportContent += `${i + 1}. ${task.title} [${task.priority.toUpperCase()}]\n`;
+                        reportContent += `   Status: ${task.status === 'completed' ? 'Completed' : 'Pending'}\n`;
+                        reportContent += `   Created: ${formatDate(task.createdAt)}\n`;
+                        if (task.dueDate) {
+                            reportContent += `   Due: ${formatDate(task.dueDate)}\n`;
                         }
+                        if (task.tags.length > 0) {
+                            reportContent += `   Tags: ${task.tags.join(', ')}\n`;
+                        }
+                        
+                        if (task.subtasks.length > 0) {
+                            reportContent += `   Subtasks:\n`;
+                            for (let j = 0; j < task.subtasks.length; j++) {
+                                const subtask = task.subtasks[j];
+                                reportContent += `     - ${subtask.title} [${subtask.completed ? 'Completed' : 'Pending'}]\n`;
+                            }
+                        }
+                        reportContent += `\n`;
                     }
-                    
-                    reportContent += `\n`;
                 }
+                
+                reportContent += `\n`;
             }
             
             // Create and download the text file
@@ -2864,6 +2948,12 @@
             
             showToast('Text report downloaded successfully', 'success');
         }
+        
+        // Helper function to get project name by ID
+        function getProjectName(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            return project ? project.name : 'Uncategorized';
+        }
 
         // Export data as JSON
         function exportData() {
@@ -2871,8 +2961,9 @@
                 tasks: tasks,
                 trash: trash,
                 tags: tags,
+                projects: projects,
                 exportDate: new Date().toISOString(),
-                version: 'ALQAAB To Do List v2'
+                version: 'ALQAAB Task Manager v2.1'
             };
             
             const dataStr = JSON.stringify(data, null, 2);
@@ -2905,6 +2996,7 @@
                             tasks = importedData.tasks || [];
                             trash = importedData.trash || [];
                             tags = importedData.tags || tags;
+                            projects = importedData.projects || projects;
                             
                             for (let i = 0; i < tasks.length; i++) {
                                 if (!tasks[i].deletedSubtasks) {
@@ -2913,15 +3005,25 @@
                                 if (!tasks[i].tags) {
                                     tasks[i].tags = [];
                                 }
+                                if (!tasks[i].project) {
+                                    tasks[i].project = 'default';
+                                }
                                 if (tasks[i].pinned === undefined) {
                                     tasks[i].pinned = false;
                                 }
                             }
                             
-                            await saveTasks();
+                            // Ensure default project exists
+                            const defaultProjectExists = projects.find(p => p.id === 'default');
+                            if (!defaultProjectExists) {
+                                projects.unshift({ id: 'default', name: 'All Tasks', color: '#4361ee' });
+                            }
+                            
+                            await saveData();
+                            renderProjects();
                             renderTagsFilter();
+                            populateProjectDropdown();
                             renderTasks();
-                            // renderCalendar(); // REMOVED
                             renderTrash();
                             showToast('Data imported successfully', 'success');
                         }
@@ -2941,9 +3043,28 @@
             if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
                 tasks.length = 0;
                 trash.length = 0;
-                await saveTasks();
+                // Keep default projects
+                projects = [
+                    { id: 'default', name: 'All Tasks', color: '#4361ee' },
+                    { id: 'personal', name: 'Personal', color: '#4cc9f0' },
+                    { id: 'work', name: 'Work', color: '#f8961e' }
+                ];
+                // Keep default tags
+                tags = [
+                    { name: 'work', color: '#4361ee' },
+                    { name: 'personal', color: '#4cc9f0' },
+                    { name: 'home', color: '#f8961e' },
+                    { name: 'smit', color: '#f72585' },
+                    { name: 'learning', color: '#3f37c9' },
+                    { name: 'urgent', color: '#dc2626' }
+                ];
+                currentProject = 'default';
+                currentTagFilter = null;
+                await saveData();
+                renderProjects();
+                renderTagsFilter();
+                populateProjectDropdown();
                 renderTasks();
-                // renderCalendar(); // REMOVED
                 renderTrash();
                 showToast('All data cleared', 'success');
             }
@@ -2976,17 +3097,16 @@
         // Simple sample tasks for initial setup
         function getSampleTasks() {
             const now = new Date();
-            const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
             
             return [
                 {
                     id: generateId(),
-                    title: 'Welcome to ALQAAB To Do List',
+                    title: 'Welcome to ALQAAB Task Manager',
                     priority: 'medium',
+                    project: 'default',
                     status: 'pending',
                     createdAt: now.toISOString(),
-                    dueDate: tomorrow.toISOString().split('T')[0],
+                    dueDate: null,
                     tags: ['learning'],
                     subtasks: [],
                     deletedSubtasks: [],
@@ -2996,6 +3116,7 @@
                     id: generateId(),
                     title: 'Add your first task above',
                     priority: 'low',
+                    project: 'default',
                     status: 'pending',
                     createdAt: now.toISOString(),
                     dueDate: null,
