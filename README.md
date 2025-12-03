@@ -1,4 +1,4 @@
-📋 ALQAAB To Do List <br>
+📋 ALQAAB Task Manager <br>
 A feature-rich task management application with offline capabilities.
 <br><br>
 Features:
