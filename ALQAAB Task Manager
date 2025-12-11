@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,7 +90,7 @@
             flex: 1;
         }
 
-        /* Header Styles */
+        /* Header Styles - UPDATED WITH SEARCH BAR */
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
@@ -104,11 +102,53 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 20px;
         }
 
         .app-title {
             font-size: 1.5rem;
             font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Search Bar in Header */
+        .header-search-container {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .header-search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .header-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .header-search-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .header-search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            color: white;
+            opacity: 0.8;
         }
 
         .theme-toggle {
@@ -123,50 +163,11 @@
             color: white;
             font-size: 0.9rem;
             transition: var(--transition);
+            white-space: nowrap;
         }
 
         .theme-toggle:hover {
             background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Search Bar */
-        .search-section {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 15px 20px;
-            margin: 20px 0;
-            box-shadow: var(--shadow);
-        }
-
-        .search-container {
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 45px 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 25px;
-            background-color: var(--card-bg);
-            color: var(--dark-text);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2rem;
-            color: var(--dark-text);
-            opacity: 0.7;
         }
 
         /* Projects Section */
@@ -253,7 +254,7 @@
             background-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* Task Input Section */
+        /* Task Input Section - UPDATED TAGS DROPDOWN */
         .task-input-section {
             background-color: var(--card-bg);
             border-radius: 10px;
@@ -296,6 +297,134 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
         }
+
+        /* New styles for tags dropdown */
+        .tags-dropdown-container {
+            position: relative;
+        }
+
+        .tags-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+            cursor: pointer;
+            transition: var(--transition);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 12px;
+            padding-right: 35px;
+        }
+
+        .tags-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .tags-select-multiple {
+            height: auto;
+            min-height: 42px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .tags-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tags-option:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .tags-option .tag-color-preview {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .new-tag-option {
+            font-style: italic;
+            color: var(--primary-color);
+            border-top: 1px dashed var(--border-color);
+            margin-top: 5px;
+            padding-top: 8px;
+        }
+
+        .new-tag-input-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        .new-tag-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--dark-text);
+        }
+
+        .add-new-tag-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .add-new-tag-btn:hover {
+            background-color: #3ab8d9;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+            min-height: 24px;
+        }
+
+        .selected-tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .remove-tag {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 1px 4px;
+            border-radius: 50%;
+        }
+
+        .remove-tag:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Removed old search section styles since search bar is now in header */
 
         /* Controls Section */
         .controls {
@@ -1253,15 +1382,63 @@
             .projects-controls {
                 flex-direction: column;
             }
+
+            /* Responsive header */
+            .header-content {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .app-title {
+                font-size: 1.3rem;
+            }
+
+            .header-search-container {
+                order: 3;
+                max-width: 100%;
+                min-width: 100%;
+            }
+
+            .theme-toggle {
+                margin-left: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .app-title {
+                text-align: center;
+            }
+
+            .header-search-container {
+                order: 2;
+            }
+
+            .theme-toggle {
+                order: 3;
+                align-self: center;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header - UPDATED WITH SEARCH BAR -->
     <header>
         <div class="container">
             <div class="header-content">
                 <h1 class="app-title">ALQAAB Task Manager</h1>
+                
+                <!-- Search Bar in Header -->
+                <div class="header-search-container">
+                    <input type="text" class="header-search-input" id="searchInput" placeholder="Search tasks and subtasks...">
+                    <div class="header-search-icon">🔍</div>
+                </div>
+                
                 <button class="theme-toggle" id="themeToggle">
                     <span>🌙</span> Dark Mode
                 </button>
@@ -1271,13 +1448,7 @@
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Search Bar -->
-        <div class="search-section">
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Search tasks and subtasks...">
-                <div class="search-icon">🔍</div>
-            </div>
-        </div>
+        <!-- Removed old search section -->
 
         <!-- Projects Section -->
         <div class="projects-section">
@@ -1291,7 +1462,7 @@
             </div>
         </div>
 
-        <!-- Task Input Section -->
+        <!-- Task Input Section - UPDATED WITH TAGS DROPDOWN -->
         <div class="task-input-section">
             <div class="task-input-row">
                 <div class="form-group">
@@ -1322,8 +1493,21 @@
 
                 <div class="form-group">
                     <label class="form-label" for="taskTags">Tags</label>
-                    <input type="text" class="form-control" id="taskTags" placeholder="work, personal, urgent">
-                    <small style="opacity: 0.7; font-size: 0.8rem;">Separate tags with commas</small>
+                    <div class="tags-dropdown-container">
+                        <select class="form-control tags-select tags-select-multiple" id="taskTags" multiple>
+                            <!-- Tags options will be populated dynamically -->
+                        </select>
+                        <div class="selected-tags" id="selectedTagsContainer">
+                            <!-- Selected tags will be displayed here -->
+                        </div>
+                    </div>
+                    <small style="opacity: 0.7; font-size: 0.8rem;">Hold Ctrl/Cmd to select multiple tags</small>
+                    
+                    <!-- New tag input (initially hidden) -->
+                    <div class="new-tag-input-container" id="newTagInputContainer" style="display: none;">
+                        <input type="text" class="new-tag-input" id="newTagInput" placeholder="Enter new tag name">
+                        <button class="add-new-tag-btn" id="addNewTagBtn">Add</button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -1508,7 +1692,11 @@
         const taskPrioritySelect = document.getElementById('taskPriority');
         const taskProjectSelect = document.getElementById('taskProject');
         const taskDueDateInput = document.getElementById('taskDueDate');
-        const taskTagsInput = document.getElementById('taskTags');
+        const taskTagsSelect = document.getElementById('taskTags');
+        const selectedTagsContainer = document.getElementById('selectedTagsContainer');
+        const newTagInputContainer = document.getElementById('newTagInputContainer');
+        const newTagInput = document.getElementById('newTagInput');
+        const addNewTagBtn = document.getElementById('addNewTagBtn');
         const generateTextReportBtn = document.getElementById('generateTextReportBtn');
         const exportSettingsBtn = document.getElementById('exportSettingsBtn');
         const importSettingsBtn = document.getElementById('importSettingsBtn');
@@ -1533,6 +1721,7 @@
             renderProjects();
             renderTagsFilter();
             populateProjectDropdown();
+            populateTagsDropdown();
             renderTasks();
             renderTrash();
             
@@ -1781,6 +1970,35 @@
                 }
             });
             
+            // Tags dropdown change event
+            taskTagsSelect.addEventListener('change', updateSelectedTagsDisplay);
+            
+            // New tag functionality
+            addNewTagBtn.addEventListener('click', addNewTagFromInput);
+            newTagInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addNewTagFromInput();
+                }
+            });
+            
+            // Show new tag input when user selects "Add new tag" option
+            taskTagsSelect.addEventListener('change', function() {
+                const selectedOptions = Array.from(this.selectedOptions);
+                const hasNewTagOption = selectedOptions.some(option => option.value === 'add-new-tag');
+                
+                if (hasNewTagOption) {
+                    // Remove the "Add new tag" option from selection
+                    for (let i = 0; i < this.options.length; i++) {
+                        if (this.options[i].value === 'add-new-tag') {
+                            this.options[i].selected = false;
+                        }
+                    }
+                    updateSelectedTagsDisplay();
+                    newTagInputContainer.style.display = 'flex';
+                    newTagInput.focus();
+                }
+            });
+            
             // Action buttons
             generateTextReportBtn.addEventListener('click', generateTextReport);
             exportSettingsBtn.addEventListener('click', exportData);
@@ -1803,6 +2021,117 @@
                     addProject();
                 }
             });
+        }
+
+        // Populate tags dropdown
+        function populateTagsDropdown() {
+            taskTagsSelect.innerHTML = '';
+            
+            // Add existing tags as options
+            for (let i = 0; i < tags.length; i++) {
+                const tag = tags[i];
+                const option = document.createElement('option');
+                option.value = tag.name;
+                option.textContent = tag.name;
+                option.title = tag.name;
+                taskTagsSelect.appendChild(option);
+            }
+            
+            // Add "Add new tag" option
+            const newTagOption = document.createElement('option');
+            newTagOption.value = 'add-new-tag';
+            newTagOption.textContent = '+ Add new tag';
+            newTagOption.className = 'new-tag-option';
+            taskTagsSelect.appendChild(newTagOption);
+            
+            updateSelectedTagsDisplay();
+        }
+
+        // Update selected tags display
+        function updateSelectedTagsDisplay() {
+            const selectedOptions = Array.from(taskTagsSelect.selectedOptions);
+            selectedTagsContainer.innerHTML = '';
+            
+            // Filter out the "Add new tag" option
+            const selectedTags = selectedOptions.filter(option => option.value !== 'add-new-tag');
+            
+            for (let i = 0; i < selectedTags.length; i++) {
+                const tagName = selectedTags[i].value;
+                const tag = tags.find(t => t.name === tagName);
+                
+                if (tag) {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'selected-tag';
+                    tagElement.style.backgroundColor = tag.color;
+                    tagElement.innerHTML = `
+                        ${tag.name}
+                        <button class="remove-tag" data-tag-name="${tag.name}">×</button>
+                    `;
+                    
+                    const removeBtn = tagElement.querySelector('.remove-tag');
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        removeSelectedTag(tag.name);
+                    });
+                    
+                    selectedTagsContainer.appendChild(tagElement);
+                }
+            }
+        }
+
+        // Remove selected tag
+        function removeSelectedTag(tagName) {
+            for (let i = 0; i < taskTagsSelect.options.length; i++) {
+                if (taskTagsSelect.options[i].value === tagName) {
+                    taskTagsSelect.options[i].selected = false;
+                }
+            }
+            updateSelectedTagsDisplay();
+        }
+
+        // Add new tag from input
+        async function addNewTagFromInput() {
+            const newTagName = newTagInput.value.trim().toLowerCase();
+            if (!newTagName) {
+                showToast('Tag name is required', 'error');
+                return;
+            }
+            
+            // Check if tag already exists
+            const existingTag = tags.find(t => t.name === newTagName);
+            if (existingTag) {
+                showToast('Tag already exists', 'error');
+                return;
+            }
+            
+            // Create new tag
+            const colors = ['#4361ee', '#4cc9f0', '#f8961e', '#f72585', '#3f37c9', '#dc2626', '#10b981', '#8b5cf6'];
+            const newTag = {
+                name: newTagName,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            };
+            
+            tags.push(newTag);
+            await saveData();
+            
+            // Add to dropdown
+            populateTagsDropdown();
+            
+            // Select the new tag
+            for (let i = 0; i < taskTagsSelect.options.length; i++) {
+                if (taskTagsSelect.options[i].value === newTagName) {
+                    taskTagsSelect.options[i].selected = true;
+                }
+            }
+            
+            updateSelectedTagsDisplay();
+            renderTagsFilter();
+            
+            // Hide new tag input and clear it
+            newTagInputContainer.style.display = 'none';
+            newTagInput.value = '';
+            
+            showToast('New tag added successfully', 'success');
         }
 
         // Add a new project
@@ -2000,6 +2329,7 @@
                 }
                 
                 await saveData();
+                populateTagsDropdown();
                 renderTagsFilter();
                 renderTasks();
                 showToast(`Tag "${tagName}" deleted. Removed from ${removedFromTasks} tasks.`, 'success');
@@ -2012,32 +2342,17 @@
             const priority = taskPrioritySelect.value;
             const project = taskProjectSelect.value;
             const dueDate = taskDueDateInput.value; // This will be empty string if not selected
-            const tagsInput = taskTagsInput.value.trim();
             
             if (!title) {
                 showToast('Task title is required', 'error');
                 return;
             }
             
-            // Process tags
-            const taskTags = [];
-            if (tagsInput) {
-                const tagNames = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
-                for (let i = 0; i < tagNames.length; i++) {
-                    const tagName = tagNames[i].toLowerCase();
-                    let tag = tags.find(t => t.name === tagName);
-                    if (!tag) {
-                        // Create new tag with random color
-                        const colors = ['#4361ee', '#4cc9f0', '#f8961e', '#f72585', '#3f37c9', '#dc2626', '#10b981', '#8b5cf6'];
-                        tag = {
-                            name: tagName,
-                            color: colors[Math.floor(Math.random() * colors.length)]
-                        };
-                        tags.push(tag);
-                    }
-                    taskTags.push(tag.name);
-                }
-            }
+            // Get selected tags from dropdown
+            const selectedOptions = Array.from(taskTagsSelect.selectedOptions);
+            const taskTags = selectedOptions
+                .filter(option => option.value !== 'add-new-tag')
+                .map(option => option.value);
             
             const now = new Date();
             const newTask = {
@@ -2061,8 +2376,14 @@
             
             // Reset form - clear all fields
             taskTitleInput.value = '';
-            taskTagsInput.value = '';
             taskDueDateInput.value = ''; // Clear due date field after adding task
+            
+            // Clear selected tags
+            for (let i = 0; i < taskTagsSelect.options.length; i++) {
+                taskTagsSelect.options[i].selected = false;
+            }
+            updateSelectedTagsDisplay();
+            
             taskTitleInput.focus();
             
             showToast('Task added successfully', 'success');
@@ -3023,6 +3344,7 @@
                             renderProjects();
                             renderTagsFilter();
                             populateProjectDropdown();
+                            populateTagsDropdown();
                             renderTasks();
                             renderTrash();
                             showToast('Data imported successfully', 'success');
@@ -3064,6 +3386,7 @@
                 renderProjects();
                 renderTagsFilter();
                 populateProjectDropdown();
+                populateTagsDropdown();
                 renderTasks();
                 renderTrash();
                 showToast('All data cleared', 'success');
